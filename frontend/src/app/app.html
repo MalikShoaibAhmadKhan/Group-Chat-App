@@ -1,0 +1,16 @@
+<header class="app-header">
+  <div class="container d-flex align-items-center justify-content-between">
+    <span class="app-title">MISHU APP</span>
+    <nav>
+      <a class="nav-link d-inline" routerLink="/chat">Rooms</a>
+      <a class="nav-link d-inline" routerLink="/login">Login</a>
+      <a class="nav-link d-inline" routerLink="/register">Register</a>
+    </nav>
+    <!-- Theme Switcher -->
+    <button class="theme-switcher ms-3" (click)="toggleTheme()" [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+      <span *ngIf="theme === 'dark'">🌙</span>
+      <span *ngIf="theme === 'light'">☀️</span>
+    </button>
+  </div>
+</header>
+<router-outlet></router-outlet>

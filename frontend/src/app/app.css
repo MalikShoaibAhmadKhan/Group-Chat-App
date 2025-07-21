@@ -1,0 +1,61 @@
+body.theme-dark {
+  background: linear-gradient(135deg, #181c24 0%, #232a36 100%) fixed !important;
+  color: #e3e6ed;
+  transition: background 0.4s, color 0.4s;
+}
+body.theme-light {
+  background: linear-gradient(135deg, #f8fafc 0%, #e3e6ed 100%) fixed !important;
+  color: #232a36;
+  transition: background 0.4s, color 0.4s;
+}
+.theme-switcher {
+  background: linear-gradient(90deg, #00eaff 0%, #0056b3 100%);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.5rem;
+  color: #fff;
+  box-shadow: 0 0 18px #00eaff99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+  outline: none;
+}
+.theme-switcher:hover, .theme-switcher:focus {
+  background: linear-gradient(90deg, #0056b3 0%, #00eaff 100%);
+  color: #fff;
+  box-shadow: 0 0 32px #00eaffcc;
+}
+.app-header {
+  background: transparent;
+  border-bottom: 2px solid #00eaff33;
+  box-shadow: 0 2px 24px #00eaff22;
+  padding: 18px 0 8px 0;
+  margin-bottom: 0;
+  z-index: 10;
+}
+.app-title {
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #00eaff;
+  text-shadow: 0 0 18px #00eaff66, 0 2px 8px #181c24;
+  letter-spacing: 2px;
+  margin-right: 32px;
+}
+nav .nav-link {
+  font-size: 1.18rem;
+  color: #00eaff !important;
+  font-weight: 700;
+  margin-right: 18px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px #00eaff44;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+nav .nav-link:hover {
+  color: #fff !important;
+  text-shadow: 0 0 18px #00eaff;
+  text-decoration: underline;
+}

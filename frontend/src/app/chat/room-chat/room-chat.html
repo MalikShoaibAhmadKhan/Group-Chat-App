@@ -1,0 +1,77 @@
+<div *ngIf="room" class="chat-box-container d-flex">
+  <!-- User List Sidebar -->
+  <div class="user-list-sidebar ms-auto">
+    <h5 class="sidebar-title mb-3">Users</h5>
+    <div *ngFor="let user of roomUsers" class="user-list-item d-flex align-items-center mb-3">
+      <span class="status-dot me-2" [class.online]="user.online" [class.offline]="!user.online"></span>
+      <img [src]="getAvatarUrl(user.username)" class="avatar-sm me-2" [alt]="user.username" />
+      <span class="username">{{ user.username }}</span>
+    </div>
+  </div>
+  <!-- Main Chat Content -->
+  <div class="flex-grow-1 pe-4">
+    <h4>Chat Room: {{ room.name }}</h4>
+    <div class="messages-list">
+      <div *ngFor="let message of messages" class="message-item-wrapper position-relative mb-2">
+        <div class="message-item d-flex align-items-center p-2 rounded w-75 position-relative" [ngClass]="{'ml-auto my-message': message.sender === currentUser, 'other-message': message.sender !== currentUser, 'pinned-message': isPinned(message)}" (click)="onMessageTap(message, $event)" (dblclick)="onMessageTap(message, $event)" tabindex="0" (keydown.enter)="onMessageTap(message, $event)" (keydown.space)="onMessageTap(message, $event)" (contextmenu)="onMessageContextMenu(message, $event)">
+          <!-- Avatar -->
+          <img [src]="getAvatarUrl(message.sender)" class="avatar me-3" [alt]="message.sender" />
+          <ng-container *ngIf="editingMessageId === message._id; else showMessage">
+            <input [(ngModel)]="editValue" class="form-control form-control-sm me-2" style="max-width: 70%; display: inline-block;" (keyup.enter)="saveEdit(message)" />
+            <button class="btn btn-success btn-sm me-1" (click)="saveEdit(message)">Save</button>
+            <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+          </ng-container>
+          <ng-template #showMessage>
+            <div class="flex-grow-1">
+              <span class="sender-in-bubble" *ngIf="message.sender">{{ message.sender }}</span>
+              <span [ngClass]="{'text-decoration-line-through text-muted': message.deleted}">{{ message.content }}</span>
+              <ng-container *ngIf="message.fileUrl">
+                <div *ngIf="message.fileType?.startsWith('image/')">
+                  <img [src]="message.fileUrl" class="chat-img mt-2" alt="Image" />
+                </div>
+                <div *ngIf="!message.fileType?.startsWith('image/')">
+                  <a [href]="message.fileUrl" target="_blank" class="file-link mt-2">Download: {{ message.fileName }}</a>
+                </div>
+              </ng-container>
+              <span *ngIf="message.edited && !message.deleted" class="badge bg-warning text-dark ms-2">edited</span>
+              <span *ngIf="message.deleted" class="badge bg-danger ms-2">deleted</span>
+              <span *ngIf="isPinned(message)" class="badge bg-info ms-2">pinned</span>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+      <div *ngIf="messages.length === 0" class="text-muted">No messages yet.</div>
+    </div>
+    <!-- Floating emoji bar overlay -->
+    <div *ngIf="reactionMenuMessage" class="floating-reactions-bar small-reactions" [style.left.px]="reactionMenuX" [style.top.px]="reactionMenuY">
+      <button *ngFor="let emoji of reactionEmojis" class="reaction-btn me-1 small-reaction-btn" [class.reacted]="isReacted(reactionMenuMessage, emoji)" (click)="toggleReaction(reactionMenuMessage, emoji)">
+        {{ emoji }} <span *ngIf="reactionMenuMessage.reactions && reactionMenuMessage.reactions[emoji]?.length">{{ reactionMenuMessage.reactions[emoji].length }}</span>
+      </button>
+    </div>
+    <!-- Floating context menu overlay -->
+    <div *ngIf="contextMenuFor && contextMenuMessage" class="custom-context-menu" [style.left.px]="contextMenuX" [style.top.px]="contextMenuY">
+      <button class="context-menu-item" (click)="onContextMenuPin(contextMenuMessage)">
+        <span *ngIf="isPinned(contextMenuMessage)">Unpin 📌</span><span *ngIf="!isPinned(contextMenuMessage)">Pin 📍</span>
+      </button>
+      <button class="context-menu-item" (click)="onContextMenuEdit(contextMenuMessage)" *ngIf="contextMenuMessage.sender === currentUser && !contextMenuMessage.deleted">Edit ✏️</button>
+      <button class="context-menu-item" (click)="onContextMenuDelete(contextMenuMessage)" *ngIf="contextMenuMessage.sender === currentUser && !contextMenuMessage.deleted">Delete 🗑️</button>
+    </div>
+    <form (ngSubmit)="sendMessage()" class="d-flex gap-2 align-items-center mt-3" enctype="multipart/form-data">
+      <input type="text" [(ngModel)]="newMessage" name="message" class="form-control" placeholder="Type your message..." required (input)="onInputTyping()" />
+      <input type="file" (change)="onFileSelected($event)" class="form-control-file ms-2" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar" />
+      <button class="btn btn-primary px-4" [disabled]="!newMessage.trim() && !selectedFile">Send</button>
+    </form>
+    <!-- File/image preview -->
+    <div *ngIf="filePreviewUrl" class="file-preview mt-2">
+      <img *ngIf="isImageFile" [src]="filePreviewUrl" class="img-preview" alt="Image preview" />
+      <span *ngIf="!isImageFile">Selected file: {{ selectedFile?.name }}</span>
+      <button class="btn btn-sm btn-danger ms-2" (click)="clearFile()">Remove</button>
+    </div>
+    <!-- Typing indicator -->
+    <div class="typing-indicator mt-2" *ngIf="typingUsers.size > 0">
+      <span *ngFor="let user of typingUsers">{{ user }}</span>
+      <span *ngIf="typingUsers.size === 1">is typing...</span>
+      <span *ngIf="typingUsers.size > 1">are typing...</span>
+    </div>
+  </div>
+</div> 

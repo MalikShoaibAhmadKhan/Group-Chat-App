@@ -1,0 +1,32 @@
+<div class="room-list-page">
+  <div class="room-list-card">
+    <h3>Available Rooms</h3>
+    <ul>
+      <li *ngFor="let room of rooms">
+        <span class="room-name">
+          <button type="button" class="btn btn-link p-0" (click)="openRoomInNewTab(room)">{{ room.name }}</button>
+          <span *ngIf="unreadCounts[room._id] > 0" class="unread-badge ms-2">{{ unreadCounts[room._id] }}</span>
+        </span>
+        <span class="room-actions">
+          <button type="button" class="icon-btn ms-3 me-2" (mouseenter)="hoveredRename = room._id" (mouseleave)="hoveredRename = null" (click)="startRenaming(room)">
+            <span class="icon">✏️</span>
+            <span class="icon-label" *ngIf="hoveredRename === room._id">Rename</span>
+          </button>
+          <button type="button" class="icon-btn ms-2" (mouseenter)="hoveredDelete = room._id" (mouseleave)="hoveredDelete = null" (click)="deleteRoom(room)">
+            <span class="icon">🗑️</span>
+            <span class="icon-label" *ngIf="hoveredDelete === room._id">Delete</span>
+          </button>
+        </span>
+        <span *ngIf="renamingRoom && renamingRoom._id === room._id">
+          <input [(ngModel)]="renameValue" placeholder="New name" class="form-control d-inline w-auto ms-2" />
+          <button type="button" class="btn btn-sm btn-success ms-1" (click)="confirmRename(room)">Save</button>
+          <button type="button" class="btn btn-sm btn-secondary ms-1" (click)="cancelRename()">Cancel</button>
+        </span>
+      </li>
+    </ul>
+    <div class="create-room-row">
+      <input [(ngModel)]="newRoom" placeholder="New Room Name" class="form-control" />
+      <button (click)="createRoom()" class="btn btn-primary ms-2">Create Room</button>
+    </div>
+  </div>
+</div> 
