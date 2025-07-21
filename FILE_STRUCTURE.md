@@ -1,6 +1,28 @@
-# Project File Structure (Beginner Friendly)
+# Project File Structure (Updated)
 
-This document explains the file and folder structure of your Nx monorepo for the Group Chat Application. It is designed for beginners to help you understand where everything lives and what each part does.
+> **Tip:** To see the project structure diagram in VSCode, install the [Markdown Preview Mermaid Support](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) extension and use the Markdown preview (`Ctrl+Shift+V`).
+
+---
+
+## 📊 Visual Project Structure
+
+```mermaid
+graph TD
+  Root["Project Root"] --> Backend & Frontend & Shared
+
+  subgraph Backend
+    B1["backend/"] --> B2["src/app/"]
+    B2 --> B3["src/lib/auth/"] & B4["src/lib/rooms/"] & B5["src/lib/messages/"] & B6["src/lib/schemas/"]
+  end
+
+  subgraph Frontend
+    F1["frontend/"] --> F2["src/app/auth/"] & F3["src/app/chat/"] & F4["src/app/services/"] & F5["src/app/guards/"] & F6["src/app/interceptors/"]
+  end
+
+  subgraph Shared
+    S1["shared-types/"] & S2["env-config/"]
+  end
+```
 
 ---
 
@@ -8,44 +30,26 @@ This document explains the file and folder structure of your Nx monorepo for the
 
 ```
 .
-├── backend/
+├── backend/           # NestJS backend app
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── auth/
-│   │   │   ├── user/
-│   │   │   ├── app.controller.spec.ts
+│   │   │   ├── auth/           # Auth controllers/services/guards
+│   │   │   ├── user/           # User logic (future)
 │   │   │   ├── app.controller.ts
 │   │   │   ├── app.module.ts
-│   │   │   ├── app.service.spec.ts
 │   │   │   └── app.service.ts
 │   │   ├── assets/
 │   │   ├── lib/
-│   │   │   ├── auth/
-│   │   │   │   ├── auth.controller.ts
-│   │   │   │   ├── auth.controller.spec.ts
-│   │   │   │   ├── auth.module.ts
-│   │   │   │   ├── auth.service.spec.ts
-│   │   │   │   └── auth.service.ts
-│   │   │   └── schemas/
-│   │   │       └── user.schema.ts
-│   │   └── main.ts
-│   ├── eslint.config.mjs
+│   │   │   ├── auth/           # Auth logic (JWT, guards, etc.)
+│   │   │   ├── rooms/          # Room controllers/services
+│   │   │   ├── messages/       # Message controllers/services
+│   │   │   └── schemas/        # Mongoose schemas (User, Room, Message)
+│   │   └── main.ts             # Backend entry point
+│   ├── .env                    # Backend environment variables
 │   ├── jest.config.ts
 │   ├── project.json
-│   ├── tsconfig.app.json
-│   ├── tsconfig.json
-│   ├── tsconfig.spec.json
-│   └── webpack.config.js
-├── backend-e2e/
-│   ├── src/
-│   │   ├── backend/
-│   │   └── support/
-│   ├── eslint.config.mjs
-│   ├── jest.config.ts
-│   ├── project.json
-│   ├── tsconfig.json
-│   └── tsconfig.spec.json
-├── frontend/
+│   └── ... (config files)
+├── frontend/          # Angular frontend app
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── auth/
@@ -57,21 +61,33 @@ This document explains the file and folder structure of your Nx monorepo for the
 │   │   │   │   │   ├── register.html
 │   │   │   │   │   ├── register.ts
 │   │   │   │   │   └── register.css
+│   │   │   ├── chat/
+│   │   │   │   ├── chat.component.ts
+│   │   │   │   ├── chat.html
+│   │   │   │   ├── chat.css
+│   │   │   │   ├── room-list/
+│   │   │   │   │   ├── room-list.ts
+│   │   │   │   │   ├── room-list.html
+│   │   │   │   │   └── room-list.css
+│   │   │   │   ├── room-chat/
+│   │   │   │   │   ├── room-chat.ts
+│   │   │   │   │   ├── room-chat.html
+│   │   │   │   │   └── room-chat.css
 │   │   │   ├── guards/
 │   │   │   │   └── auth.guard.ts
 │   │   │   ├── interceptors/
 │   │   │   │   ├── auth.interceptor.ts
 │   │   │   │   └── index.ts
 │   │   │   ├── services/
-│   │   │   │   └── auth.service.ts
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   └── room.service.ts
 │   │   │   ├── app.config.server.ts
 │   │   │   ├── app.config.ts
 │   │   │   ├── app.css
 │   │   │   ├── app.html
 │   │   │   ├── app.routes.ts
 │   │   │   ├── app.spec.ts
-│   │   │   ├── app.ts
-│   │   │   └── nx-welcome.ts
+│   │   │   └── app.ts
 │   │   ├── index.html
 │   │   ├── main.server.ts
 │   │   ├── main.ts
@@ -91,19 +107,12 @@ This document explains the file and folder structure of your Nx monorepo for the
 │   ├── tsconfig.app.json
 │   ├── tsconfig.json
 │   └── tsconfig.spec.json
-├── frontend-e2e/
-│   ├── src/
-│   │   └── example.spec.ts
-│   ├── eslint.config.mjs
-│   ├── playwright.config.ts
-│   ├── project.json
-│   └── tsconfig.json
-├── shared-types/
+├── shared-types/      # Shared TypeScript types/interfaces
 │   ├── src/
 │   │   ├── index.ts
 │   │   └── lib/
-│   │       ├── shared-types.spec.ts
-│   │       └── shared-types.ts
+│   │       ├── shared-types.ts
+│   │       └── shared-types.spec.ts
 │   ├── README.md
 │   ├── eslint.config.mjs
 │   ├── jest.config.ts
@@ -111,12 +120,12 @@ This document explains the file and folder structure of your Nx monorepo for the
 │   ├── tsconfig.json
 │   ├── tsconfig.lib.json
 │   └── tsconfig.spec.json
-├── env-config/
+├── env-config/        # Shared environment config
 │   ├── src/
 │   │   ├── index.ts
 │   │   └── lib/
-│   │       ├── env-config.spec.ts
-│   │       └── env-config.ts
+│   │       ├── env-config.ts
+│   │       └── env-config.spec.ts
 │   ├── README.md
 │   ├── eslint.config.mjs
 │   ├── jest.config.ts
@@ -124,28 +133,12 @@ This document explains the file and folder structure of your Nx monorepo for the
 │   ├── tsconfig.json
 │   ├── tsconfig.lib.json
 │   └── tsconfig.spec.json
-├── .nx/
-│   ├── workspace-data/
-│   └── cache/
-├── dist/
-│   ├── backend/
-│   └── frontend/
-├── node_modules/
-├── .vscode/
-│   └── extensions.json
-├── .editorconfig
-├── .gitignore
-├── .prettierignore
-├── .prettierrc
-├── eslint.config.mjs
-├── jest.config.ts
-├── jest.preset.js
-├── nx.json
-├── package-lock.json
-├── package.json
 ├── README.md
 ├── DELIVERABLES.md
-└── FILE_STRUCTURE.md
+├── FILE_STRUCTURE.md
+├── package.json
+├── nx.json
+└── ... (Nx config and root files)
 ```
 
 ---
@@ -157,35 +150,28 @@ This document explains the file and folder structure of your Nx monorepo for the
 - **Key parts:**
   - `src/` — All source code for the backend app.
     - `app/` — Main application logic (controllers, services, modules, etc).
+    - `lib/` — Feature modules (auth, rooms, messages, schemas)
     - `main.ts` — Entry point for the backend server.
+  - `.env` — Backend environment variables (e.g., MONGO_URI)
   - `jest.config.ts` — Test configuration for backend unit tests.
   - `project.json` — Nx project config for backend.
-- **What you build here:** APIs, authentication, chat logic, WebSocket gateway, etc.
-
-### `backend-e2e/`
-- **Purpose:** End-to-end (E2E) tests for the backend app.
-- **Key parts:**
-  - `src/backend/backend.spec.ts` — Main E2E test file for backend.
-  - `jest.config.ts`, `tsconfig.json` — Test and TypeScript config for E2E tests.
-- **Why:** Simulates real API usage and tests the backend as a whole.
+- **What you build here:** APIs, authentication, chat logic, file uploads, etc.
 
 ### `frontend/`
 - **Purpose:** Contains the Angular frontend (client-side) code.
 - **Key parts:**
   - `src/` — All source code for the frontend app.
     - `app/` — Main application logic (components, pages, services, etc).
+      - `auth/` — Login and register components
+      - `chat/` — Chat UI, room list, room chat, etc.
+      - `guards/` — Route guards
+      - `interceptors/` — HTTP interceptors
+      - `services/` — API and auth services
     - `main.ts` — Entry point for the frontend app.
     - `index.html` — Main HTML file.
   - `jest.config.ts` — Test configuration for frontend unit tests.
   - `project.json` — Nx project config for frontend.
-- **What you build here:** User interface, chat screens, login/register forms, etc.
-
-### `frontend-e2e/`
-- **Purpose:** End-to-end (E2E) tests for the frontend app.
-- **Key parts:**
-  - `src/example.spec.ts` — Main E2E test file for frontend.
-  - `playwright.config.ts`, `tsconfig.json` — Test and TypeScript config for E2E tests.
-- **Why:** Simulates real user interactions with the UI.
+- **What you build here:** User interface, chat screens, login/register forms, file uploads, etc.
 
 ### `shared-types/`
 - **Purpose:** Holds TypeScript types and interfaces that are shared between frontend and backend.
@@ -200,10 +186,10 @@ This document explains the file and folder structure of your Nx monorepo for the
 - **Why:** Keeps environment settings consistent across apps.
 
 ### `README.md`
-- **Purpose:** Main project overview, progress tracker, and quick start guide.
+- **Purpose:** Main project overview, features, and quick start guide.
 
 ### `DELIVERABLES.md`
-- **Purpose:** Detailed list of project phases, deliverables, and system architecture.
+- **Purpose:** Detailed list of project features, deliverables, and system architecture.
 
 ### `FILE_STRUCTURE.md`
 - **Purpose:** (This file) Explains the file/folder structure for beginners.
@@ -217,14 +203,6 @@ This document explains the file and folder structure of your Nx monorepo for the
 ### Other Nx config files
 - **Examples:** `tsconfig.base.json`, `jest.config.ts`, `.editorconfig`, etc.
 - **Purpose:** Manage TypeScript, testing, formatting, and other workspace-wide settings.
-
----
-
-## How It All Fits Together
-- **Each app (frontend/backend) is isolated in its own folder.**
-- **Each app has its own E2E test project for full-system testing.**
-- **Shared code (types, config) lives in libraries, not duplicated.**
-- **Nx manages everything, making it easy to build, test, and scale.**
 
 ---
 
