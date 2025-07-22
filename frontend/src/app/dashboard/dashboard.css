@@ -1,0 +1,207 @@
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--primary-bg, #181c24);
+}
+
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--sidebar-bg, #181a1b);
+  color: var(--text-color, #e3e6ed);
+  box-shadow: 2px 0 24px #00eaff22;
+  padding: 32px 0 0 0;
+  position: fixed;
+  z-index: 100;
+}
+.sidebar-header {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 2rem;
+  letter-spacing: 2px;
+  color: #00eaff;
+  text-shadow: 0 0 8px #00eaff88;
+}
+.sidebar .nav-link {
+  color: #fff;
+  padding: 12px 32px;
+  font-size: 1.1rem;
+  border-radius: 0 24px 24px 0;
+  margin-bottom: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.sidebar .nav-link.active, .sidebar .nav-link:hover {
+  background: linear-gradient(90deg, #00eaff44 0%, #23252600 100%);
+  color: #00eaff;
+}
+:host {
+  background: var(--primary-bg, #181c24);
+  color: var(--text-color, #e3e6ed);
+  display: block;
+}
+.main-content {
+  margin-left: 220px;
+  width: 100%;
+  min-height: 100vh;
+  background: transparent;
+}
+.navbar {
+  border-bottom: 1px solid #222;
+  box-shadow: 0 2px 16px #00eaff11;
+}
+.card {
+  border: none;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 32px #00eaff22, 0 0 0 2px #00eaff11 inset;
+  margin-bottom: 1.5rem;
+  background: var(--card-bg, #232a36);
+  color: var(--text-color, #e3e6ed);
+}
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+}
+.bg-gradient-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+}
+.bg-gradient-info {
+  background: linear-gradient(135deg, #396afc 0%, #2948ff 100%) !important;
+}
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%) !important;
+  color: #222 !important;
+}
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.card-text.display-4 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+@media (max-width: 991px) {
+  .sidebar {
+    width: 100px;
+    padding: 16px 0 0 0;
+  }
+  .sidebar-header {
+    font-size: 1.2rem;
+  }
+  .main-content {
+    margin-left: 100px;
+  }
+}
+@media (max-width: 767px) {
+  .dashboard-wrapper {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    min-height: 60px;
+    position: relative;
+    box-shadow: none;
+    padding: 8px 0 0 0;
+  }
+  .main-content {
+    margin-left: 0;
+  }
+}
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+}
+.settings-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2100;
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 8px 48px #00eaff55;
+}
+.modal-content {
+  background: var(--modal-bg, #181a1b);
+  color: var(--text-color, #e3e6ed);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 32px #00eaff22, 0 0 0 2px #00eaff11 inset;
+}
+.close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: #fff;
+  opacity: 0.7;
+  cursor: pointer;
+  margin-left: auto;
+}
+.close:hover {
+  opacity: 1;
+}
+.settings-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 340px;
+  height: 100vh;
+  background: var(--sidebar-bg, #181a1b);
+  color: var(--text-color, #e3e6ed);
+  box-shadow: -4px 0 32px #00eaff44;
+  z-index: 3000;
+  padding: 32px 24px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  animation: slideInDrawer 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes slideInDrawer {
+  from { right: -400px; opacity: 0; }
+  to { right: 0; opacity: 1; }
+}
+.settings-drawer-header {
+  font-size: 1.3rem;
+  margin-bottom: 18px;
+}
+.settings-drawer-body {
+  flex: 1;
+}
+.settings-drawer label {
+  font-weight: 600;
+  color: #00eaff;
+}
+.settings-drawer .form-control {
+  background: var(--input-bg, #232a36);
+  color: var(--input-text, #e3e6ed);
+  border: 1px solid var(--border, #00eaff44);
+  border-radius: 0.5rem;
+}
+.settings-drawer .form-control:focus {
+  border-color: var(--accent, #00eaff);
+  box-shadow: 0 0 0 2px var(--accent, #00eaff33);
+}
+.settings-drawer .btn-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #fff;
+  opacity: 0.7;
+  cursor: pointer;
+  margin-left: auto;
+}
+.settings-drawer .btn-close:hover {
+  opacity: 1;
+  color: #00eaff;
+}
+button.btn-primary {
+  background: var(--button-bg, #00eaff) !important;
+  color: var(--button-text, #fff) !important;
+  border: 1.5px solid var(--border, #00eaff) !important;
+  box-shadow: 0 0 24px var(--accent, #00eaff99);
+}
+button.btn-primary:hover {
+  background: var(--button-hover-bg, #0056b3) !important;
+} 

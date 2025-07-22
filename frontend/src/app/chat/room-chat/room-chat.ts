@@ -1,9 +1,13 @@
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, PLATFORM_ID, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Room, RoomService } from '../../services/room.service';
+import { isPlatformBrowser } from '@angular/common';
+import { UserService } from '../../services/user.service';
+import { MessageService } from '../../services/message.service';
+import { SocketService } from '../../services/socket.service';
 
 interface Message {
   _id?: string;
@@ -17,6 +21,8 @@ interface Message {
   fileUrl?: string;
   fileType?: string;
   fileName?: string;
+  senderId?: string;
+  delivered?: boolean;
 }
 
 @Component({
@@ -25,6 +31,7 @@ interface Message {
   imports: [CommonModule, FormsModule],
   templateUrl: './room-chat.html',
   styleUrls: ['./room-chat.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class RoomChatComponent implements OnInit {
   room: Room | null = null;
@@ -49,35 +56,103 @@ export class RoomChatComponent implements OnInit {
   contextMenuFor: string | null = null;
   contextMenuX = 0;
   contextMenuY = 0;
+  userProfiles: { [id: string]: { username: string; photo?: string } } = {};
+  systemMessages: { text: string; type: 'info' | 'error'; }[] = [];
+  reconnecting = false;
 
   route = inject(ActivatedRoute);
   http = inject(HttpClient);
   roomService = inject(RoomService);
   cd = inject(ChangeDetectorRef);
+  platformId = inject(PLATFORM_ID);
+  userService = inject(UserService);
+  messageService = inject(MessageService);
+  socketService = inject(SocketService);
 
   constructor() {
     // Try to get current user from localStorage (JWT payload)
-    const token = localStorage.getItem('access_token');
+    let token = null;
+    if (isPlatformBrowser(this.platformId)) {
+      token = localStorage.getItem('access_token');
+    }
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.currentUser = payload.username;
       } catch {}
     }
+    // Subscribe to user changes for live updates
+    this.userService.userChanges().subscribe(user => {
+      if (user && user.username) {
+        this.currentUser = user.username;
+      }
+    });
   }
 
   ngOnInit() {
     const roomId = this.route.snapshot.paramMap.get('roomId');
+    let token = null;
+    if (isPlatformBrowser(this.platformId)) {
+      token = localStorage.getItem('access_token');
+    }
+    if (token) {
+      this.socketService.connect(token);
+      // Reconnection handling
+      (this.socketService as any).socket?.on('disconnect', () => {
+        this.reconnecting = true;
+        this.cd.detectChanges();
+      });
+      (this.socketService as any).socket?.on('connect', () => {
+        this.reconnecting = false;
+        this.cd.detectChanges();
+      });
+      (this.socketService as any).socket?.on('reconnect_attempt', () => {
+        this.reconnecting = true;
+        this.cd.detectChanges();
+      });
+    }
     if (roomId) {
       this.roomService.getRooms().subscribe((rooms) => {
         const found = rooms.find(r => r._id === roomId);
         if (found) {
           this.room = found;
           this.fetchMessages();
+          this.socketService.joinRoom(roomId);
+          this.socketService.onNewMessage().subscribe(msg => {
+            // Mark as delivered if it's our own message
+            if (msg.sender === this.currentUser) {
+              msg.delivered = true;
+            }
+            this.messages.push(msg);
+            this.cd.detectChanges();
+          });
+          this.socketService.onUserJoined().subscribe(data => {
+            if (data.user?.username && data.user.username !== this.currentUser) {
+              this.systemMessages.push({ text: `${data.user.username} joined the room`, type: 'info' });
+              this.cd.detectChanges();
+            }
+          });
+          this.socketService.onUserLeft().subscribe(data => {
+            if (data.user?.username && data.user.username !== this.currentUser) {
+              this.systemMessages.push({ text: `${data.user.username} left the room`, type: 'info' });
+              this.cd.detectChanges();
+            }
+          });
+          this.socketService.onTyping().subscribe(data => {
+            if (data.user?.username && data.user.username !== this.currentUser) {
+              this.typingUsers.add(data.user.username);
+              setTimeout(() => {
+                this.typingUsers.delete(data.user.username);
+                this.cd.detectChanges();
+              }, 2000);
+              this.cd.detectChanges();
+            }
+          });
         }
       });
     }
     document.addEventListener('click', this.hideReactions.bind(this));
+    this.userService.userChanges().subscribe(() => this.cd.detectChanges());
   }
 
   fetchMessages() {
@@ -119,6 +194,7 @@ export class RoomChatComponent implements OnInit {
   sendMessage() {
     if ((!this.newMessage.trim() && !this.selectedFile) || !this.room) return;
     this.emitTyping(false);
+    const sender = this.userService.user?.username || this.currentUser;
     if (this.selectedFile) {
       const formData = new FormData();
       formData.append('content', this.newMessage);
@@ -135,18 +211,16 @@ export class RoomChatComponent implements OnInit {
         }
       );
     } else {
-      this.http.post<Message>('http://localhost:3000/messages', {
+      // Emit via socket for real-time
+      const msg = {
         content: this.newMessage,
-        roomId: this.room._id
-      }).subscribe(
-        msg => {
-          this.messages.push(msg);
-          this.newMessage = '';
-        },
-        err => {
-          alert('Failed to send message');
-        }
-      );
+        roomId: this.room._id,
+        sender: sender,
+        delivered: false
+      };
+      this.messages.push(msg as any); // Optimistic UI
+      this.socketService.sendMessage(msg);
+      this.newMessage = '';
     }
   }
 
@@ -157,6 +231,9 @@ export class RoomChatComponent implements OnInit {
   }
 
   emitTyping(isTyping: boolean) {
+    if (isTyping && this.room) {
+      this.socketService.userTyping(this.room._id);
+    }
     // Placeholder: In real app, use websockets. For now, just local state.
     if (isTyping) {
       this.typingUsers.add(this.currentUser);
@@ -165,9 +242,38 @@ export class RoomChatComponent implements OnInit {
     }
   }
 
-  getAvatarUrl(username: string): string {
-    // Use DiceBear Avatars API for demo
+  getAvatarUrl(username: string, senderId?: string): string {
+    if ((senderId && senderId === this.userService.user?._id) || (username === this.userService.user?.username && this.userService.user?.photo)) {
+      return this.userService.user.photo!;
+    }
+    if (senderId) {
+      this.userService.getUserById(senderId).subscribe(profile => {
+        if (profile && profile.photo) {
+          this.userProfiles[senderId] = { username: profile.username, photo: profile.photo };
+        }
+      });
+      if (this.userProfiles[senderId]?.photo) {
+        return this.userProfiles[senderId].photo!;
+      }
+    }
     return `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
+  }
+
+  getDisplayName(username: string, senderId?: string): string {
+    if ((senderId && senderId === this.userService.user?._id) || (username === this.userService.user?.username && this.userService.user?.username)) {
+      return this.userService.user.username;
+    }
+    if (senderId) {
+      this.userService.getUserById(senderId).subscribe(profile => {
+        if (profile && profile.username) {
+          this.userProfiles[senderId] = { username: profile.username, photo: profile.photo };
+        }
+      });
+      if (this.userProfiles[senderId]?.username) {
+        return this.userProfiles[senderId].username;
+      }
+    }
+    return username;
   }
 
   onMessageTap(message: Message, event: Event) {
@@ -201,12 +307,26 @@ export class RoomChatComponent implements OnInit {
   }
   toggleReaction(message: Message, emoji: string) {
     if (!message.reactions) message.reactions = {};
+    // Remove user from all other emoji reactions
+    for (const e of this.reactionEmojis) {
+      if (message.reactions[e]) {
+        const idx = message.reactions[e].indexOf(this.currentUser);
+        if (idx !== -1) message.reactions[e].splice(idx, 1);
+      }
+    }
+    // Add or remove reaction for the selected emoji
     if (!message.reactions[emoji]) message.reactions[emoji] = [];
     const idx = message.reactions[emoji].indexOf(this.currentUser);
     if (idx === -1) {
       message.reactions[emoji].push(this.currentUser);
     } else {
       message.reactions[emoji].splice(idx, 1);
+    }
+    // Persist reactions to backend
+    if (message._id) {
+      this.messageService.updateReactions(message._id, message.reactions).subscribe((updated: any) => {
+        message.reactions = updated.reactions;
+      });
     }
     this.hideReactions();
   }
@@ -329,5 +449,34 @@ export class RoomChatComponent implements OnInit {
     }
     // Sort online first, then by lastActive desc
     return users.sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0) || b.lastActive - a.lastActive);
+  }
+
+  // Helper to check if a message has any reactions
+  hasReactions(message: Message): boolean {
+    if (!message.reactions) return false;
+    return this.reactionEmojis.some(emoji => message.reactions && message.reactions[emoji]?.length > 0);
+  }
+
+  getReactedEmojis(message: Message): string[] {
+    if (!message.reactions) return [];
+    return this.reactionEmojis.filter(emoji => message.reactions && message.reactions[emoji]?.length > 0);
+  }
+
+  // Scroll to first unread message (simulate with a local variable for now)
+  ngAfterViewInit() {
+    setTimeout(() => {
+      const messagesList = document.querySelector('.messages-list');
+      if (messagesList) {
+        // For demo: scroll to the last message (simulate unread)
+        messagesList.scrollTop = messagesList.scrollHeight;
+      }
+    }, 100);
+  }
+
+  ngOnDestroy() {
+    if (this.room) {
+      this.socketService.leaveRoom(this.room._id);
+    }
+    this.socketService.disconnect();
   }
 } 

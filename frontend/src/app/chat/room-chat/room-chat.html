@@ -11,20 +11,24 @@
   <!-- Main Chat Content -->
   <div class="flex-grow-1 pe-4">
     <h4>Chat Room: {{ room.name }}</h4>
-    <div class="messages-list">
+    <div *ngIf="reconnecting" class="alert alert-warning text-center" style="position:sticky;top:0;z-index:1000;">Reconnecting to chat...</div>
+    <!-- System messages -->
+    <div class="messages-list" #messagesList>
+      <div *ngFor="let sys of systemMessages" class="system-message text-center text-info mb-2">{{ sys.text }}</div>
       <div *ngFor="let message of messages" class="message-item-wrapper position-relative mb-2">
         <div class="message-item d-flex align-items-center p-2 rounded w-75 position-relative" [ngClass]="{'ml-auto my-message': message.sender === currentUser, 'other-message': message.sender !== currentUser, 'pinned-message': isPinned(message)}" (click)="onMessageTap(message, $event)" (dblclick)="onMessageTap(message, $event)" tabindex="0" (keydown.enter)="onMessageTap(message, $event)" (keydown.space)="onMessageTap(message, $event)" (contextmenu)="onMessageContextMenu(message, $event)">
           <!-- Avatar -->
-          <img [src]="getAvatarUrl(message.sender)" class="avatar me-3" [alt]="message.sender" />
+          <img [src]="getAvatarUrl(message.sender, message.senderId)" class="avatar me-3" [alt]="getDisplayName(message.sender, message.senderId)" />
           <ng-container *ngIf="editingMessageId === message._id; else showMessage">
             <input [(ngModel)]="editValue" class="form-control form-control-sm me-2" style="max-width: 70%; display: inline-block;" (keyup.enter)="saveEdit(message)" />
-            <button class="btn btn-success btn-sm me-1" (click)="saveEdit(message)">Save</button>
-            <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+            <button class="btn btn-success btn-sm me-1 context-menu-item" (click)="saveEdit(message)">Save</button>
+            <button class="btn btn-secondary btn-sm context-menu-item" (click)="cancelEdit()">Cancel</button>
           </ng-container>
           <ng-template #showMessage>
             <div class="flex-grow-1">
-              <span class="sender-in-bubble" *ngIf="message.sender">{{ message.sender }}</span>
+              <span class="sender-in-bubble" *ngIf="message.sender">{{ getDisplayName(message.sender, message.senderId) }}</span>
               <span [ngClass]="{'text-decoration-line-through text-muted': message.deleted}">{{ message.content }}</span>
+              <span *ngIf="message.sender === currentUser && message.delivered" class="ms-2 text-success" title="Delivered">&#10003;</span>
               <ng-container *ngIf="message.fileUrl">
                 <div *ngIf="message.fileType?.startsWith('image/')">
                   <img [src]="message.fileUrl" class="chat-img mt-2" alt="Image" />
@@ -38,6 +42,12 @@
               <span *ngIf="isPinned(message)" class="badge bg-info ms-2">pinned</span>
             </div>
           </ng-template>
+          <!-- Floating reacted emoji(s) on message edge -->
+          <div *ngIf="hasReactions(message)" class="floating-reactions-edge">
+            <span *ngFor="let emoji of getReactedEmojis(message)" class="floating-reaction-emoji" [class.reacted]="isReacted(message, emoji)">
+              {{ emoji }}
+            </span>
+          </div>
         </div>
       </div>
       <div *ngIf="messages.length === 0" class="text-muted">No messages yet.</div>
@@ -45,7 +55,7 @@
     <!-- Floating emoji bar overlay -->
     <div *ngIf="reactionMenuMessage" class="floating-reactions-bar small-reactions" [style.left.px]="reactionMenuX" [style.top.px]="reactionMenuY">
       <button *ngFor="let emoji of reactionEmojis" class="reaction-btn me-1 small-reaction-btn" [class.reacted]="isReacted(reactionMenuMessage, emoji)" (click)="toggleReaction(reactionMenuMessage, emoji)">
-        {{ emoji }} <span *ngIf="reactionMenuMessage.reactions && reactionMenuMessage.reactions[emoji]?.length">{{ reactionMenuMessage.reactions[emoji].length }}</span>
+        {{ emoji }} <span *ngIf="reactionMenuMessage.reactions?.[emoji]?.length">{{ reactionMenuMessage.reactions?.[emoji]?.length }}</span>
       </button>
     </div>
     <!-- Floating context menu overlay -->

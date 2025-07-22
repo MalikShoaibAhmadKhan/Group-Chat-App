@@ -1,9 +1,10 @@
-import { Component, ChangeDetectorRef, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { Room, RoomService } from '../services/room.service';
 import { RoomListComponent } from './room-list/room-list';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { isPlatformBrowser } from '@angular/common';
 
 interface Message {
   _id?: string;
@@ -27,10 +28,14 @@ export class ChatComponent implements OnInit {
   cd = inject(ChangeDetectorRef);
   http = inject(HttpClient);
   roomService = inject(RoomService);
+  platformId = inject(PLATFORM_ID);
 
   constructor() {
     // Try to get current user from localStorage (JWT payload)
-    const token = localStorage.getItem('access_token');
+    let token = null;
+    if (isPlatformBrowser(this.platformId)) {
+      token = localStorage.getItem('access_token');
+    }
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));

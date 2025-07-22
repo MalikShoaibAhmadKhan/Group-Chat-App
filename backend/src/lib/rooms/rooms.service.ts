@@ -24,4 +24,8 @@ export class RoomsService {
     const res = await this.roomModel.deleteOne({ _id: id }).exec();
     return { deleted: res.deletedCount === 1 };
   }
+
+  async countRooms() {
+    return this.roomModel.countDocuments();
+  }
 } 

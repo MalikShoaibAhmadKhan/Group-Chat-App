@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { inject } from '@angular/core';
 
 export interface Room {
   _id: string;
@@ -11,8 +12,7 @@ export interface Room {
 @Injectable({ providedIn: 'root' })
 export class RoomService {
   private apiUrl = 'http://localhost:3000/rooms';
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getRooms(): Observable<Room[]> {
     return this.http.get<Room[]>(this.apiUrl);
@@ -28,5 +28,9 @@ export class RoomService {
 
   deleteRoom(roomId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${roomId}`);
+  }
+
+  getRoomCount() {
+    return this.http.get<number>(`${this.apiUrl}/count`);
   }
 } 

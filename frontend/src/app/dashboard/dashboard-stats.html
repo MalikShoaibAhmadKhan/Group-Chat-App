@@ -1,0 +1,52 @@
+<nav class="navbar navbar-expand navbar-dark bg-dark">
+  <span class="navbar-brand mb-0 h1">Dashboard</span>
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item"><a class="nav-link" href="#" (click)="logout()">Logout</a></li>
+  </ul>
+</nav>
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card text-white bg-gradient-primary mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Users</h5>
+          <p class="card-text display-4">{{ userCount }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-gradient-success mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Rooms</h5>
+          <p class="card-text display-4">{{ roomCount }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-gradient-info mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Active Users</h5>
+          <p class="card-text display-4">{{ activeUsers }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-gradient-warning mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Messages</h5>
+          <p class="card-text display-4">{{ messageCount }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card bg-dark text-white mb-4">
+        <div class="card-header">Recent Activity</div>
+        <div class="card-body">
+          <p class="card-text">No recent activity yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

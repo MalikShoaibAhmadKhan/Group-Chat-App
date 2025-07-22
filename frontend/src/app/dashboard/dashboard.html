@@ -1,0 +1,50 @@
+<div class="dashboard-wrapper">
+  <nav class="sidebar bg-dark text-white">
+    <div class="sidebar-header d-flex flex-column align-items-center">
+      <img *ngIf="userService.user?.photo" [src]="userService.user?.photo" class="rounded-circle mb-2" style="width: 64px; height: 64px; object-fit: cover; border: 2px solid #00eaff;" alt="User avatar" />
+      <span class="fw-bold">{{ userService.user?.username || 'User' }}</span>
+    </div>
+    <ul class="nav flex-column">
+      <li class="nav-item"><a class="nav-link" routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link" routerLink="/chat">Chat</a></li>
+      <li class="nav-item"><a class="nav-link" routerLink="/dashboard/profile">Profile</a></li>
+      <li class="nav-item"><button class="nav-link btn btn-link p-0 text-start w-100" type="button" (click)="showSettings = true">Settings</button></li>
+    </ul>
+  </nav>
+  <div class="main-content">
+    <!-- Settings Drawer -->
+    <div class="settings-drawer" *ngIf="showSettings">
+      <div class="settings-drawer-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">App Settings</span>
+        <button class="btn btn-close btn-sm" (click)="showSettings = false" aria-label="Close">&times;</button>
+      </div>
+      <div class="settings-drawer-body">
+        <div class="form-group mb-3">
+          <label for="themeToggle">Theme</label>
+          <div class="form-check form-switch mt-1">
+            <input class="form-check-input" type="checkbox" id="themeToggle" [checked]="pendingTheme === 'dark'" (change)="setTheme($any($event.target)?.checked ? 'dark' : 'light')">
+            <label class="form-check-label" for="themeToggle">{{ pendingTheme === 'dark' ? 'Dark' : 'Light' }} Mode</label>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label for="sizeSelect">Text Size</label>
+          <select id="sizeSelect" class="form-control mt-1" [value]="pendingTextSize" (change)="setTextSize($any($event).target.value)">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+        <div class="form-group mb-3">
+          <label for="styleSelect">Text Style</label>
+          <select id="styleSelect" class="form-control mt-1" [value]="pendingTextStyle" (change)="setTextStyle($any($event).target.value)">
+            <option value="sans">Sans</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Monospace</option>
+          </select>
+        </div>
+        <button class="btn btn-primary w-100 mt-3" (click)="applySettings()">Apply Changes</button>
+      </div>
+    </div>
+    <router-outlet></router-outlet>
+  </div>
+</div> 

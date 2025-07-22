@@ -28,6 +28,12 @@ export class Message extends Document {
 
   @Prop({ default: false })
   deleted: boolean;
+
+  @Prop({ type: Object, default: {} })
+  reactions?: { [emoji: string]: string[] };
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  senderId?: string;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message); 

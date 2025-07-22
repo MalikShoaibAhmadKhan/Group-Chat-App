@@ -1,0 +1,28 @@
+body {
+  background: linear-gradient(135deg, #181c24 0%, #232a36 100%) fixed !important;
+  color: #e3e6ed;
+  transition: background 0.4s, color 0.4s;
+}
+body.theme-light {
+  background: linear-gradient(135deg, #f8fafc 0%, #e3e6ed 100%) fixed !important;
+  color: #232a36;
+  transition: background 0.4s, color 0.4s;
+}
+.card {
+  background: #fff;
+}
+input.form-control, input[type="text"], input[type="password"] {
+  background: #fff;
+  color: #232a36;
+}
+button.btn-primary {
+  background: #007bff;
+  color: #fff;
+  border: none;
+}
+button.btn-primary:hover {
+  background: #0056b3;
+}
+.container {
+  background: transparent !important;
+}

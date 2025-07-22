@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { RoomService, Room } from '../../services/room.service';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -24,6 +25,7 @@ export class RoomListComponent {
 
   roomService = inject(RoomService);
   http = inject(HttpClient);
+  platformId = inject(PLATFORM_ID);
 
   ngOnInit() {
     this.roomService.getRooms().subscribe((data) => {
@@ -35,7 +37,10 @@ export class RoomListComponent {
   fetchUnreadCount(room: Room) {
     this.http.get<{ _id: string; createdAt: string; }[]>(`http://localhost:3000/messages/${room._id}/meta`).subscribe(
       (messages) => {
-        const lastRead = localStorage.getItem('lastRead_' + room._id);
+        let lastRead = null;
+        if (isPlatformBrowser(this.platformId)) {
+          lastRead = localStorage.getItem('lastRead_' + room._id);
+        }
         let unread = 0;
         if (lastRead) {
           unread = messages.filter(m => new Date(m.createdAt) > new Date(lastRead)).length;
@@ -51,7 +56,9 @@ export class RoomListComponent {
   }
 
   markRoomAsRead(room: Room) {
-    localStorage.setItem('lastRead_' + room._id, new Date().toISOString());
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('lastRead_' + room._id, new Date().toISOString());
+    }
     this.unreadCounts[room._id] = 0;
   }
 

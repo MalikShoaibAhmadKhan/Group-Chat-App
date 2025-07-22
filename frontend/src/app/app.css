@@ -1,12 +1,30 @@
 body.theme-dark {
-  background: linear-gradient(135deg, #181c24 0%, #232a36 100%) fixed !important;
-  color: #e3e6ed;
+  background: linear-gradient(135deg, #181c24 0%, #232a36 100%) !important;
+  color: #e3e6ed !important;
   transition: background 0.4s, color 0.4s;
 }
 body.theme-light {
-  background: linear-gradient(135deg, #f8fafc 0%, #e3e6ed 100%) fixed !important;
-  color: #232a36;
+  background: linear-gradient(135deg, #f8fafc 0%, #e3e6ed 100%) !important;
+  color: #232a36 !important;
   transition: background 0.4s, color 0.4s;
+}
+body.text-small {
+  font-size: 14px;
+}
+body.text-medium {
+  font-size: 16px;
+}
+body.text-large {
+  font-size: 20px;
+}
+body.font-sans {
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+body.font-serif {
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+body.font-mono {
+  font-family: 'Fira Mono', 'Consolas', 'Courier New', monospace;
 }
 .theme-switcher {
   background: linear-gradient(90deg, #00eaff 0%, #0056b3 100%);
@@ -58,4 +76,8 @@ nav .nav-link:hover {
   color: #fff !important;
   text-shadow: 0 0 18px #00eaff;
   text-decoration: underline;
+}
+.container, .main-content, .dashboard-wrapper, .row, .col, .settings-drawer, .sidebar, .messages-list, .chat-box-container, .user-list-sidebar, .navbar, .modal-content, .card-footer, .app-header {
+  background: transparent !important;
+  box-shadow: none !important;
 }

@@ -3,29 +3,29 @@
     <div class="card shadow-lg p-4">
       <div class="card-body">
         <h2 class="card-title text-center mb-4">Register</h2>
-        <form (ngSubmit)="onRegister()" #registerForm="ngForm">
+<form (ngSubmit)="onRegister()" #registerForm="ngForm">
           <div class="form-group mb-3">
-            <input
-              type="text"
+  <input
+    type="text"
               class="form-control form-control-lg"
-              placeholder="Username"
-              [(ngModel)]="username"
-              name="username"
-              required
-            />
+    placeholder="Username"
+    [(ngModel)]="username"
+    name="username"
+    required
+  />
           </div>
           <div class="form-group mb-4">
-            <input
-              type="password"
+  <input
+    type="password"
               class="form-control form-control-lg"
-              placeholder="Password"
-              [(ngModel)]="password"
-              name="password"
-              required
-            />
+    placeholder="Password"
+    [(ngModel)]="password"
+    name="password"
+    required
+  />
           </div>
           <button type="submit" class="btn btn-success btn-block w-100 py-2">Register</button>
-        </form>
+</form>
       </div>
     </div>
   </div>

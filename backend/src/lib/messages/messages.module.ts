@@ -4,6 +4,7 @@ import { MessagesController } from './messages.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, MessageSchema } from '../schemas/message.schema';
 import { JwtModule } from '@nestjs/jwt';
+import { ChatGateway } from './chat.gateway';
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.register({})
   ],
   controllers: [MessagesController],
-  providers: [MessagesService],
+  providers: [MessagesService, ChatGateway],
 })
 export class MessagesModule {} 

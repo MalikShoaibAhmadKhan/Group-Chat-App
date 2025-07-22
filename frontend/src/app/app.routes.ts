@@ -18,4 +18,18 @@ export const appRoutes: Route[] = [
     component: RoomChatComponent,
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./dashboard/dashboard-stats').then(m => m.DashboardStatsComponent),
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./profile/profile').then(m => m.ProfileComponent),
+      },
+    ],
+  },
 ];

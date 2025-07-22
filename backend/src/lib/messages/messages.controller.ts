@@ -15,13 +15,18 @@ export class MessagesController {
     return this.messagesService.findByRoom(roomId);
   }
 
+  @Get('count')
+  async countMessages() {
+    return this.messagesService.countMessages();
+  }
+
   @Post()
   async sendMessage(
     @Body('content') content: string,
     @Body('roomId') roomId: string,
     @Request() req
   ) {
-    return this.messagesService.sendMessage(req.user.username, content, roomId);
+    return this.messagesService.sendMessage(req.user.username, content, roomId, req.user.userId);
   }
 
   @Post('upload')
@@ -49,7 +54,8 @@ export class MessagesController {
       roomId,
       fileUrl,
       fileType,
-      fileName
+      fileName,
+      req.user.userId
     );
   }
 
@@ -60,6 +66,15 @@ export class MessagesController {
     @Request() req
   ) {
     return this.messagesService.editMessage(id, content, req.user.username);
+  }
+
+  @Patch(':id/reactions')
+  async updateReactions(
+    @Param('id') id: string,
+    @Body('reactions') reactions: { [emoji: string]: string[] },
+    @Request() req
+  ) {
+    return this.messagesService.updateReactions(id, reactions);
   }
 
   @Delete(':id')

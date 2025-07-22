@@ -11,13 +11,13 @@ export class MessagesService {
     return this.messageModel.find({ room: roomId }).sort({ createdAt: 1 }).exec();
   }
 
-  async sendMessage(sender: string, content: string, roomId: string) {
-    const message = new this.messageModel({ sender, content, room: roomId });
+  async sendMessage(sender: string, content: string, roomId: string, senderId: string) {
+    const message = new this.messageModel({ sender, content, room: roomId, senderId });
     return message.save();
   }
 
-  async sendMessageWithFile(sender: string, content: string, roomId: string, fileUrl: string, fileType: string, fileName: string) {
-    const message = new this.messageModel({ sender, content, room: roomId, fileUrl, fileType, fileName });
+  async sendMessageWithFile(sender: string, content: string, roomId: string, fileUrl: string, fileType: string, fileName: string, senderId: string) {
+    const message = new this.messageModel({ sender, content, room: roomId, fileUrl, fileType, fileName, senderId });
     return message.save();
   }
 
@@ -39,5 +39,17 @@ export class MessagesService {
     msg.deleted = true;
     await msg.save();
     return { deleted: true };
+  }
+
+  async updateReactions(id: string, reactions: { [emoji: string]: string[] }) {
+    const msg = await this.messageModel.findById(id);
+    if (!msg) return null;
+    msg.reactions = reactions;
+    await msg.save();
+    return msg;
+  }
+
+  async countMessages() {
+    return this.messageModel.countDocuments();
   }
 } 

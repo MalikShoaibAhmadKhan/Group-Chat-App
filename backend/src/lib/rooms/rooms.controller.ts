@@ -12,6 +12,11 @@ export class RoomsController {
     return this.roomsService.findAll();
   }
 
+  @Get('count')
+  async countRooms() {
+    return this.roomsService.countRooms();
+  }
+
   @Post()
   async createRoom(@Body('name') name: string) {
     return this.roomsService.create(name);

@@ -11,8 +11,7 @@ export class AuthService {
   private tokenKey = 'access_token';
   private platformId = inject(PLATFORM_ID);
   private isLoggedIn$ = new BehaviorSubject<boolean>(this.hasToken());
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   private hasToken(): boolean {
     if (isPlatformBrowser(this.platformId)) {
@@ -39,10 +38,21 @@ export class AuthService {
   }
 
   logout() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(this.tokenKey);
-    }
-    this.isLoggedIn$.next(false);
+    // Call backend logout endpoint
+    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
+      next: () => {
+        if (isPlatformBrowser(this.platformId)) {
+          localStorage.removeItem(this.tokenKey);
+        }
+        this.isLoggedIn$.next(false);
+      },
+      error: () => {
+        if (isPlatformBrowser(this.platformId)) {
+          localStorage.removeItem(this.tokenKey);
+        }
+        this.isLoggedIn$.next(false);
+      }
+    });
   }
 
   getToken() {
@@ -52,7 +62,22 @@ export class AuthService {
     return null;
   }
 
+  setToken(token: string) {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.tokenKey, token);
+    }
+    this.isLoggedIn$.next(true);
+  }
+
   isAuthenticated$() {
     return this.isLoggedIn$.asObservable();
+  }
+
+  getUserCount() {
+    return this.http.get<number>(`${this.apiUrl}/count`);
+  }
+
+  getOnlineUserCount() {
+    return this.http.get<number>('http://localhost:3000/auth/online-count');
   }
 }
