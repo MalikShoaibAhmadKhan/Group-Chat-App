@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
@@ -11,20 +11,25 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login.css'],
 })
 export class LoginComponent {
-  username = '';
+  usernameOrEmail = '';
   password = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  auth = inject(AuthService);
+  router = inject(Router);
 
   onLogin() {
-    this.auth.login(this.username, this.password).subscribe({
+    this.auth.login(this.usernameOrEmail, this.password).subscribe({
       next: () => {
         alert('Login successful');
-        this.router.navigate(['/chat']); // We'll define this route later
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         alert(err.error.message || 'Login failed');
       },
     });
+  }
+
+  goToRegister() {
+    this.router.navigate(['/register']);
   }
 }

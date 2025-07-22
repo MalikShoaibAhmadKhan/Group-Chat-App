@@ -21,14 +21,17 @@ export const appRoutes: Route[] = [
   {
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent),
+    canActivate: [authGuard],
     children: [
       {
         path: '',
         loadComponent: () => import('./dashboard/dashboard-stats').then(m => m.DashboardStatsComponent),
+        canActivate: [authGuard],
       },
       {
         path: 'profile',
         loadComponent: () => import('./profile/profile').then(m => m.ProfileComponent),
+        canActivate: [authGuard],
       },
     ],
   },

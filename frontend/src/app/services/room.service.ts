@@ -36,4 +36,25 @@ export class RoomService {
   getRoomCount() {
     return this.http.get<number>(`${this.apiUrl}/count`);
   }
-} 
+}
+
+// Jest test for RoomService
+// Only runs if Jest is set up for frontend
+// You can move this to a separate .spec.ts file if desired
+/*
+describe('RoomService', () => {
+  let service: RoomService;
+  let httpMock: any;
+
+  beforeEach(() => {
+    httpMock = { get: jest.fn() };
+    service = new RoomService();
+    (service as any).http = httpMock;
+  });
+
+  it('should get rooms', () => {
+    httpMock.get.mockReturnValue('rooms');
+    expect(service.getRooms()).toBe('rooms');
+  });
+});
+*/ 

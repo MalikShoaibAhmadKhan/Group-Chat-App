@@ -1,0 +1,61 @@
+{
+  "info": {
+    "_postman_id": "group-chat-collection-001",
+    "name": "Group Chat API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password\"\n}"},
+        "url": {"raw": "http://localhost:3000/auth/register", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["auth", "register"]}
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password\"\n}"},
+        "url": {"raw": "http://localhost:3000/auth/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["auth", "login"]}
+      }
+    },
+    {
+      "name": "Get Rooms",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+        "url": {"raw": "http://localhost:3000/rooms", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["rooms"]}
+      }
+    },
+    {
+      "name": "Create Room",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"name\": \"Test Room\",\n  \"isPrivate\": false\n}"},
+        "url": {"raw": "http://localhost:3000/rooms", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["rooms"]}
+      }
+    },
+    {
+      "name": "Send Message",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"content\": \"Hello!\",\n  \"roomId\": \"{{roomId}}\"\n}"},
+        "url": {"raw": "http://localhost:3000/messages", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["messages"]}
+      }
+    },
+    {
+      "name": "Get Messages",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+        "url": {"raw": "http://localhost:3000/messages/{{roomId}}", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["messages", "{{roomId}}"]}
+      }
+    }
+  ]
+} 

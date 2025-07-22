@@ -2,6 +2,9 @@ import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SettingsService } from './services/settings.service';
+import { AuthService } from './services/auth.service';
+import { UserService } from './services/user.service';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   imports: [RouterModule, CommonModule],
@@ -13,6 +16,11 @@ export class App {
   protected title = 'frontend';
   platformId = inject(PLATFORM_ID);
   settings = inject(SettingsService);
+  auth = inject(AuthService);
+  userService = inject(UserService);
+  isLoggedIn = false;
+  username: string | null = null;
+  userProfile: { _id: string; username: string; photo?: string } | null = null;
 
   get theme() { return this.settings.theme; }
   get textSize() { return this.settings.textSize; }
@@ -26,6 +34,26 @@ export class App {
     this.applyTheme(this.theme);
     this.applyTextSize(this.textSize);
     this.applyTextStyle(this.textStyle);
+  }
+
+  ngOnInit() {
+    this.auth.isAuthenticated$().subscribe(isAuth => {
+      this.isLoggedIn = isAuth;
+      if (isAuth) {
+        this.userService.fetchProfile();
+        this.userService.userChanges().subscribe(user => {
+          this.username = user?.username || null;
+          this.userProfile = user;
+        });
+      } else {
+        this.username = null;
+        this.userProfile = null;
+      }
+    });
+  }
+
+  get userPhoto() {
+    return this.userProfile?.photo || null;
   }
 
   setTheme(theme: 'dark' | 'light') {

@@ -2,11 +2,19 @@
   <div class="container d-flex align-items-center justify-content-between">
     <span class="app-title">MISHU APP</span>
     <nav>
-      <a class="nav-link d-inline" routerLink="/dashboard">Dashboard</a>
-      <a class="nav-link d-inline" routerLink="/chat">Rooms</a>
-      <a class="nav-link d-inline" routerLink="/login">Login</a>
-      <a class="nav-link d-inline" routerLink="/register">Register</a>
+      <ng-container *ngIf="isLoggedIn; else loggedOutLinks">
+        <a class="nav-link d-inline" routerLink="/dashboard">Dashboard</a>
+        <a class="nav-link d-inline" routerLink="/chat">Rooms</a>
+      </ng-container>
+      <ng-template #loggedOutLinks>
+        <a class="nav-link d-inline" routerLink="/login">Login</a>
+        <a class="nav-link d-inline" routerLink="/register">Register</a>
+      </ng-template>
     </nav>
+    <div *ngIf="isLoggedIn" class="user-profile d-flex align-items-center ms-3">
+      <img *ngIf="userPhoto" [src]="userPhoto" class="rounded-circle me-2" style="width:36px;height:36px;object-fit:cover;border:2px solid #00eaff;" alt="Profile photo" />
+      <span class="fw-bold">{{ username }}</span>
+    </div>
     <!-- Theme Switcher -->
   </div>
 </header>

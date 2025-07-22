@@ -10,14 +10,14 @@ import { extname } from 'path';
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
-  @Get(':roomId')
-  async getMessages(@Param('roomId') roomId: string) {
-    return this.messagesService.findByRoom(roomId);
-  }
-
   @Get('count')
   async countMessages() {
     return this.messagesService.countMessages();
+  }
+
+  @Get(':roomId')
+  async getMessages(@Param('roomId') roomId: string) {
+    return this.messagesService.findByRoom(roomId);
   }
 
   @Post()
