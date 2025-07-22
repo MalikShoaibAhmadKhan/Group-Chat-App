@@ -6,6 +6,7 @@
       <span class="status-dot me-2" [class.online]="user.online" [class.offline]="!user.online"></span>
       <img [src]="getAvatarUrl(user.username)" class="avatar-sm me-2" [alt]="user.username" />
       <span class="username">{{ user.username }}</span>
+      <span *ngIf="!user.online && user.lastSeen" class="ms-2 text-muted small">(last seen {{ formatLastSeen(user.lastSeen) }})</span>
     </div>
   </div>
   <!-- Main Chat Content -->

@@ -4,10 +4,10 @@
     <ul>
       <li *ngFor="let room of rooms">
         <span class="room-name">
-          <button type="button" class="btn btn-link p-0" (click)="openRoomInNewTab(room)">{{ room.name }}</button>
+          <button type="button" class="btn btn-link p-0" (click)="selectRoom(room)">{{ room.name }}</button>
           <span *ngIf="unreadCounts[room._id] > 0" class="unread-badge ms-2">{{ unreadCounts[room._id] }}</span>
         </span>
-        <span class="room-actions">
+        <span class="room-actions" *ngIf="room.creator === currentUserId">
           <button type="button" class="icon-btn ms-3 me-2" (mouseenter)="hoveredRename = room._id" (mouseleave)="hoveredRename = null" (click)="startRenaming(room)">
             <span class="icon">✏️</span>
             <span class="icon-label" *ngIf="hoveredRename === room._id">Rename</span>
@@ -26,7 +26,12 @@
     </ul>
     <div class="create-room-row">
       <input [(ngModel)]="newRoom" placeholder="New Room Name" class="form-control" />
+      <label class="ms-2">
+        <input type="checkbox" [(ngModel)]="isPrivate" /> Private
+      </label>
+      <input *ngIf="isPrivate" [(ngModel)]="roomCode" placeholder="Room Code (leave blank to auto-generate)" class="form-control ms-2" style="width: 180px; display: inline-block;" />
       <button (click)="createRoom()" class="btn btn-primary ms-2">Create Room</button>
     </div>
+    <div *ngIf="createdRoomCode" class="alert alert-info mt-2">Private room code: <b>{{ createdRoomCode }}</b></div>
   </div>
 </div> 

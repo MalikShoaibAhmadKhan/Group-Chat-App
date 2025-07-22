@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, UseGuards, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Patch, Param, Delete, Req } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('rooms')
 @UseGuards(JwtAuthGuard)
@@ -18,17 +19,20 @@ export class RoomsController {
   }
 
   @Post()
-  async createRoom(@Body('name') name: string) {
-    return this.roomsService.create(name);
+  async createRoom(@Body('name') name: string, @Body('isPrivate') isPrivate: boolean, @Body('roomCode') roomCode: string, @Req() req: Request) {
+    const creator = (req as any).user?.userId || (req as any).user?.sub;
+    return this.roomsService.create(name, isPrivate, roomCode, creator);
   }
 
   @Patch(':id')
-  async renameRoom(@Param('id') id: string, @Body('name') name: string) {
-    return this.roomsService.rename(id, name);
+  async renameRoom(@Param('id') id: string, @Body('name') name: string, @Req() req: Request) {
+    const userId = (req as any).user?.userId || (req as any).user?.sub;
+    return this.roomsService.renameIfCreator(id, name, userId);
   }
 
   @Delete(':id')
-  async deleteRoom(@Param('id') id: string) {
-    return this.roomsService.delete(id);
+  async deleteRoom(@Param('id') id: string, @Req() req: Request) {
+    const userId = (req as any).user?.userId || (req as any).user?.sub;
+    return this.roomsService.deleteIfCreator(id, userId);
   }
 } 

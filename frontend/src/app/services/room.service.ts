@@ -7,6 +7,9 @@ export interface Room {
   _id: string;
   name: string;
   users: string[];
+  isPrivate?: boolean;
+  roomCode?: string;
+  creator?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -18,8 +21,8 @@ export class RoomService {
     return this.http.get<Room[]>(this.apiUrl);
   }
 
-  createRoom(name: string): Observable<Room> {
-    return this.http.post<Room>(this.apiUrl, { name });
+  createRoom(name: string, isPrivate?: boolean, roomCode?: string): Observable<Room> {
+    return this.http.post<Room>(this.apiUrl, { name, isPrivate, roomCode });
   }
 
   renameRoom(roomId: string, newName: string): Observable<Room> {

@@ -31,6 +31,14 @@ export default createConfig(
         routes: ['/'],
       },
     },
+    rspackConfigOverrides: {
+      resolve: {
+        fallback: {
+          bufferutil: false,
+          'utf-8-validate': false,
+        },
+      },
+    },
   },
   // Second argument: Environment-specific configurations
   {

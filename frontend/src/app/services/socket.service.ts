@@ -53,4 +53,14 @@ export class SocketService {
       this.socket?.on('typing', data => observer.next(data));
     });
   }
+  onUserOnline(): Observable<any> {
+    return new Observable(observer => {
+      this.socket?.on('userOnline', data => observer.next(data));
+    });
+  }
+  onUserOffline(): Observable<any> {
+    return new Observable(observer => {
+      this.socket?.on('userOffline', data => observer.next(data));
+    });
+  }
 } 

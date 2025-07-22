@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject, PLATFORM_ID, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, PLATFORM_ID, ViewEncapsulation, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -34,7 +34,7 @@ interface Message {
   encapsulation: ViewEncapsulation.None,
 })
 export class RoomChatComponent implements OnInit {
-  room: Room | null = null;
+  @Input() room: Room | null = null;
   messages: Message[] = [];
   newMessage = '';
   currentUser = '';
@@ -59,6 +59,8 @@ export class RoomChatComponent implements OnInit {
   userProfiles: { [id: string]: { username: string; photo?: string } } = {};
   systemMessages: { text: string; type: 'info' | 'error'; }[] = [];
   reconnecting = false;
+  onlineUsers = new Set<string>();
+  lastSeen: { [userId: string]: number } = {};
 
   route = inject(ActivatedRoute);
   http = inject(HttpClient);
@@ -90,6 +92,57 @@ export class RoomChatComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (this.room) {
+      this.fetchMessages();
+      if (this.room._id) {
+        this.socketService.joinRoom(this.room._id);
+        this.socketService.onNewMessage().subscribe(msg => {
+          // Mark as delivered if it's our own message
+          if (msg.sender === this.currentUser) {
+            msg.delivered = true;
+          }
+          this.messages.push(msg);
+          this.cd.detectChanges();
+        });
+        this.socketService.onUserJoined().subscribe(data => {
+          if (data.user?.username && data.user.username !== this.currentUser) {
+            this.systemMessages.push({ text: `${data.user.username} joined the room`, type: 'info' });
+            this.cd.detectChanges();
+          }
+        });
+        this.socketService.onUserLeft().subscribe(data => {
+          if (data.user?.username && data.user.username !== this.currentUser) {
+            this.systemMessages.push({ text: `${data.user.username} left the room`, type: 'info' });
+            this.cd.detectChanges();
+          }
+        });
+        this.socketService.onTyping().subscribe(data => {
+          if (data.user?.username && data.user.username !== this.currentUser) {
+            this.typingUsers.add(data.user.username);
+            setTimeout(() => {
+              this.typingUsers.delete(data.user.username);
+              this.cd.detectChanges();
+            }, 2000);
+            this.cd.detectChanges();
+          }
+        });
+        this.socketService.onUserOnline().subscribe(data => {
+          if (data.userId) {
+            this.onlineUsers.add(data.userId);
+            delete this.lastSeen[data.userId];
+            this.cd.detectChanges();
+          }
+        });
+        this.socketService.onUserOffline().subscribe(data => {
+          if (data.userId) {
+            this.onlineUsers.delete(data.userId);
+            this.lastSeen[data.userId] = Date.now();
+            this.cd.detectChanges();
+          }
+        });
+      }
+      return;
+    }
     const roomId = this.route.snapshot.paramMap.get('roomId');
     let token = null;
     if (isPlatformBrowser(this.platformId)) {
@@ -145,6 +198,20 @@ export class RoomChatComponent implements OnInit {
                 this.typingUsers.delete(data.user.username);
                 this.cd.detectChanges();
               }, 2000);
+              this.cd.detectChanges();
+            }
+          });
+          this.socketService.onUserOnline().subscribe(data => {
+            if (data.userId) {
+              this.onlineUsers.add(data.userId);
+              delete this.lastSeen[data.userId];
+              this.cd.detectChanges();
+            }
+          });
+          this.socketService.onUserOffline().subscribe(data => {
+            if (data.userId) {
+              this.onlineUsers.delete(data.userId);
+              this.lastSeen[data.userId] = Date.now();
               this.cd.detectChanges();
             }
           });
@@ -433,7 +500,7 @@ export class RoomChatComponent implements OnInit {
   get roomUsers() {
     // Extract unique usernames from messages
     const now = Date.now();
-    const users: { username: string; online: boolean; lastActive: number; }[] = [];
+    const users: { username: string; online: boolean; lastActive: number; senderId?: string }[] = [];
     const seen = new Set<string>();
     for (let i = this.messages.length - 1; i >= 0; i--) {
       const msg = this.messages[i];
@@ -443,12 +510,25 @@ export class RoomChatComponent implements OnInit {
         users.push({
           username: msg.sender,
           online: now - lastActive < 2 * 60 * 1000, // 2 minutes
-          lastActive
+          lastActive,
+          senderId: msg.senderId
         });
       }
     }
     // Sort online first, then by lastActive desc
-    return users.sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0) || b.lastActive - a.lastActive);
+    return users.map(u => ({
+      ...u,
+      online: u.senderId ? this.onlineUsers.has(u.senderId) : this.onlineUsers.has(u.username),
+      lastSeen: u.senderId ? this.lastSeen[u.senderId] : this.lastSeen[u.username]
+    })).sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0) || b.lastActive - a.lastActive);
+  }
+
+  formatLastSeen(ts: number): string {
+    if (!ts) return '';
+    const diff = Math.floor((Date.now() - ts) / 60000);
+    if (diff < 1) return 'just now';
+    if (diff === 1) return '1 min ago';
+    return `${diff} min ago`;
   }
 
   // Helper to check if a message has any reactions

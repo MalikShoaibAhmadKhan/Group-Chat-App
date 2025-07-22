@@ -20,6 +20,12 @@ export class RoomListComponent {
   hoveredRename: string | null = null;
   hoveredDelete: string | null = null;
   unreadCounts: { [roomId: string]: number } = {};
+  isPrivate = false;
+  roomCode = '';
+  createdRoomCode = '';
+  joinRoomCode = '';
+  joinRoomError = '';
+  currentUserId = '';
 
   @Output() roomSelected = new EventEmitter<Room>();
 
@@ -28,6 +34,17 @@ export class RoomListComponent {
   platformId = inject(PLATFORM_ID);
 
   ngOnInit() {
+    // Get current user ID from JWT
+    let token = null;
+    if (isPlatformBrowser(this.platformId)) {
+      token = localStorage.getItem('access_token');
+    }
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        this.currentUserId = payload.userId || payload.sub || '';
+      } catch {}
+    }
     this.roomService.getRooms().subscribe((data) => {
       this.rooms = data;
       this.rooms.forEach(room => this.fetchUnreadCount(room));
@@ -63,15 +80,31 @@ export class RoomListComponent {
   }
 
   selectRoom(room: Room) {
-    this.markRoomAsRead(room);
-    this.roomSelected.emit(room);
+    this.joinRoomError = '';
+    if (room.isPrivate) {
+      const code = prompt('Enter room code to join this private room:');
+      if (!code) return;
+      if (room.roomCode !== code) {
+        this.joinRoomError = 'Incorrect room code.';
+        alert('Incorrect room code.');
+        return;
+      }
+    }
+    // Open the room in a new tab with the correct route
+    window.open(`/chat/${room._id}`, '_blank');
   }
 
   createRoom() {
     if (!this.newRoom.trim()) return;
-    this.roomService.createRoom(this.newRoom).subscribe((room) => {
+    this.roomService.createRoom(this.newRoom, this.isPrivate, this.isPrivate ? this.roomCode : undefined).subscribe((room) => {
       this.rooms.push(room);
       this.newRoom = '';
+      this.roomCode = '';
+      if (room.isPrivate && room.roomCode) {
+        this.createdRoomCode = room.roomCode;
+      } else {
+        this.createdRoomCode = '';
+      }
     });
   }
 
