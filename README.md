@@ -6,6 +6,16 @@ A full-stack, real-time group chat app built with Angular (frontend), NestJS (ba
 
 ---
 
+## 🚀 User Experience & Navigation (2025 Update)
+- The app always opens with the **login page**. Only login and register are accessible until logged in.
+- **Register here** is a button on the login page for new users.
+- After login, the user is redirected to the **dashboard** and can access all app features.
+- The header shows the username and profile photo (if set) on the far right, separate from navigation buttons.
+- Navigation bar only shows "Dashboard" and "Rooms" when logged in; login/register links are hidden.
+- All routes except login/register are protected by authentication guard.
+
+---
+
 ## 🏗️ Architecture Overview
 
 ```mermaid
@@ -226,7 +236,7 @@ npx nx serve frontend
 
 ---
 
-## 🧑‍💻 Development Notes & Tips for Beginners
+## 👩‍💻 Development Notes & Tips for Beginners
 - **Frontend:** Angular 16+, Bootstrap 5, custom CSS
 - **Backend:** NestJS, Mongoose, Multer (file uploads), JWT
 - **Monorepo:** Managed with Nx (makes it easy to build, test, and scale)
