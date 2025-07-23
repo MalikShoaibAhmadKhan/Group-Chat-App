@@ -13,7 +13,7 @@ RUN npm install --legacy-peer-deps
 RUN npx nx build frontend --prod
 
 # ---- Production Stage ----
-FROM nginx:1.25
+FROM nginx:1.26
 WORKDIR /usr/share/nginx/html
 
 COPY --from=build /app/dist/frontend/browser .
