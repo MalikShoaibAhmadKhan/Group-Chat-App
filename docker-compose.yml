@@ -1,0 +1,32 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodata:/data/db
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: groupchat-backend
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/group-chat
+      - PORT=3000
+      - JWT_SECRET=your_jwt_secret
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: groupchat-frontend
+    ports:
+      - '4200:4200'
+    depends_on:
+      - backend
+volumes:
+  mongodata: 

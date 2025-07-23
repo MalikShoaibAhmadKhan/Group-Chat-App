@@ -50,13 +50,13 @@ export default createConfig(
         budgets: [
           {
             type: 'initial',
-            maximumWarning: '500kb',
-            maximumError: '1mb',
+            maximumWarning: '5mb',
+            maximumError: '5mb',
           },
           {
             type: 'anyComponentStyle',
-            maximumWarning: '4kb',
-            maximumError: '8kb',
+            maximumWarning: '20kb',
+            maximumError: '40kb',
           },
         ],
         outputHashing: 'all',

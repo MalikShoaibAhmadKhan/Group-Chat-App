@@ -99,5 +99,8 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "zone.js": "~0.15.0"
+  },
+  "overrides": {
+    "stylus": "0.0.1-security"
   }
 }
