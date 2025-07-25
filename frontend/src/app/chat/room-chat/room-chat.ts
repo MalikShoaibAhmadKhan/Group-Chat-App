@@ -81,7 +81,9 @@ export class RoomChatComponent implements OnInit {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.currentUser = payload.username;
-      } catch {}
+      } catch {
+        // Ignore invalid token
+      }
     }
     // Subscribe to user changes for live updates
     this.userService.userChanges().subscribe(user => {
@@ -96,47 +98,54 @@ export class RoomChatComponent implements OnInit {
       this.fetchMessages();
       if (this.room._id) {
         this.socketService.joinRoom(this.room._id);
-        this.socketService.onNewMessage().subscribe(msg => {
-          // Mark as delivered if it's our own message
-          if (msg.sender === this.currentUser) {
-            msg.delivered = true;
+        this.socketService.onNewMessage().subscribe((msg) => {
+          const message = msg as Message;
+          if (message.sender === this.currentUser) {
+            message.delivered = true;
           }
-          this.messages.push(msg);
+          this.messages.push(message);
           this.cd.detectChanges();
         });
-        this.socketService.onUserJoined().subscribe(data => {
-          if (data.user?.username && data.user.username !== this.currentUser) {
-            this.systemMessages.push({ text: `${data.user.username} joined the room`, type: 'info' });
+        this.socketService.onUserJoined().subscribe((data) => {
+          const d = data as { user?: { username?: string } };
+          if (d.user?.username && d.user.username !== this.currentUser) {
+            this.systemMessages.push({ text: `${d.user.username} joined the room`, type: 'info' });
             this.cd.detectChanges();
           }
         });
-        this.socketService.onUserLeft().subscribe(data => {
-          if (data.user?.username && data.user.username !== this.currentUser) {
-            this.systemMessages.push({ text: `${data.user.username} left the room`, type: 'info' });
+        this.socketService.onUserLeft().subscribe((data) => {
+          const d = data as { user?: { username?: string } };
+          if (d.user?.username && d.user.username !== this.currentUser) {
+            this.systemMessages.push({ text: `${d.user.username} left the room`, type: 'info' });
             this.cd.detectChanges();
           }
         });
-        this.socketService.onTyping().subscribe(data => {
-          if (data.user?.username && data.user.username !== this.currentUser) {
-            this.typingUsers.add(data.user.username);
+        this.socketService.onTyping().subscribe((data) => {
+          const d = data as { user?: { username?: string } };
+          if (d.user && d.user.username && d.user.username !== this.currentUser) {
+            this.typingUsers.add(d.user.username);
             setTimeout(() => {
-              this.typingUsers.delete(data.user.username);
-              this.cd.detectChanges();
+              if (d.user && d.user.username) {
+                this.typingUsers.delete(d.user.username);
+                this.cd.detectChanges();
+              }
             }, 2000);
             this.cd.detectChanges();
           }
         });
-        this.socketService.onUserOnline().subscribe(data => {
-          if (data.userId) {
-            this.onlineUsers.add(data.userId);
-            delete this.lastSeen[data.userId];
+        this.socketService.onUserOnline().subscribe((data) => {
+          const d = data as { userId?: string };
+          if (d.userId) {
+            this.onlineUsers.add(d.userId);
+            delete this.lastSeen[d.userId];
             this.cd.detectChanges();
           }
         });
-        this.socketService.onUserOffline().subscribe(data => {
-          if (data.userId) {
-            this.onlineUsers.delete(data.userId);
-            this.lastSeen[data.userId] = Date.now();
+        this.socketService.onUserOffline().subscribe((data) => {
+          const d = data as { userId?: string };
+          if (d.userId) {
+            this.onlineUsers.delete(d.userId);
+            this.lastSeen[d.userId] = Date.now();
             this.cd.detectChanges();
           }
         });
@@ -171,47 +180,54 @@ export class RoomChatComponent implements OnInit {
           this.room = found;
           this.fetchMessages();
           this.socketService.joinRoom(roomId);
-          this.socketService.onNewMessage().subscribe(msg => {
-            // Mark as delivered if it's our own message
-            if (msg.sender === this.currentUser) {
-              msg.delivered = true;
+          this.socketService.onNewMessage().subscribe((msg) => {
+            const message = msg as Message;
+            if (message.sender === this.currentUser) {
+              message.delivered = true;
             }
-            this.messages.push(msg);
+            this.messages.push(message);
             this.cd.detectChanges();
           });
-          this.socketService.onUserJoined().subscribe(data => {
-            if (data.user?.username && data.user.username !== this.currentUser) {
-              this.systemMessages.push({ text: `${data.user.username} joined the room`, type: 'info' });
+          this.socketService.onUserJoined().subscribe((data) => {
+            const d = data as { user?: { username?: string } };
+            if (d.user?.username && d.user.username !== this.currentUser) {
+              this.systemMessages.push({ text: `${d.user.username} joined the room`, type: 'info' });
               this.cd.detectChanges();
             }
           });
-          this.socketService.onUserLeft().subscribe(data => {
-            if (data.user?.username && data.user.username !== this.currentUser) {
-              this.systemMessages.push({ text: `${data.user.username} left the room`, type: 'info' });
+          this.socketService.onUserLeft().subscribe((data) => {
+            const d = data as { user?: { username?: string } };
+            if (d.user?.username && d.user.username !== this.currentUser) {
+              this.systemMessages.push({ text: `${d.user.username} left the room`, type: 'info' });
               this.cd.detectChanges();
             }
           });
-          this.socketService.onTyping().subscribe(data => {
-            if (data.user?.username && data.user.username !== this.currentUser) {
-              this.typingUsers.add(data.user.username);
+          this.socketService.onTyping().subscribe((data) => {
+            const d = data as { user?: { username?: string } };
+            if (d.user && d.user.username && d.user.username !== this.currentUser) {
+              this.typingUsers.add(d.user.username);
               setTimeout(() => {
-                this.typingUsers.delete(data.user.username);
-                this.cd.detectChanges();
+                if (d.user && d.user.username) {
+                  this.typingUsers.delete(d.user.username);
+                  this.cd.detectChanges();
+                }
               }, 2000);
               this.cd.detectChanges();
             }
           });
-          this.socketService.onUserOnline().subscribe(data => {
-            if (data.userId) {
-              this.onlineUsers.add(data.userId);
-              delete this.lastSeen[data.userId];
+          this.socketService.onUserOnline().subscribe((data) => {
+            const d = data as { userId?: string };
+            if (d.userId) {
+              this.onlineUsers.add(d.userId);
+              delete this.lastSeen[d.userId];
               this.cd.detectChanges();
             }
           });
-          this.socketService.onUserOffline().subscribe(data => {
-            if (data.userId) {
-              this.onlineUsers.delete(data.userId);
-              this.lastSeen[data.userId] = Date.now();
+          this.socketService.onUserOffline().subscribe((data) => {
+            const d = data as { userId?: string };
+            if (d.userId) {
+              this.onlineUsers.delete(d.userId);
+              this.lastSeen[d.userId] = Date.now();
               this.cd.detectChanges();
             }
           });

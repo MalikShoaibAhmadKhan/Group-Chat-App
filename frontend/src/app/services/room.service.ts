@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { inject } from '@angular/core';
+import { API_BASE_URL } from './api-config';
 
 export interface Room {
   _id: string;
@@ -14,7 +15,7 @@ export interface Room {
 
 @Injectable({ providedIn: 'root' })
 export class RoomService {
-  private apiUrl = 'http://localhost:3000/rooms';
+  private apiUrl = API_BASE_URL + '/rooms';
   private http = inject(HttpClient);
 
   getRooms(): Observable<Room[]> {
@@ -29,7 +30,7 @@ export class RoomService {
     return this.http.patch<Room>(`${this.apiUrl}/${roomId}`, { name: newName });
   }
 
-  deleteRoom(roomId: string): Observable<any> {
+  deleteRoom(roomId: string): Observable<unknown> {
     return this.http.delete(`${this.apiUrl}/${roomId}`);
   }
 
@@ -44,12 +45,12 @@ export class RoomService {
 /*
 describe('RoomService', () => {
   let service: RoomService;
-  let httpMock: any;
+  let httpMock: unknown;
 
   beforeEach(() => {
     httpMock = { get: jest.fn() };
     service = new RoomService();
-    (service as any).http = httpMock;
+    (service as unknown as { http: unknown }).http = httpMock;
   });
 
   it('should get rooms', () => {

@@ -1,13 +1,17 @@
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
+
+const API_BASE_URL = '/api'; // fallback or default value
+
+import { Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/auth';
+  private apiUrl = API_BASE_URL + '/auth';
   private tokenKey = 'access_token';
   private platformId = inject(PLATFORM_ID);
   private isLoggedIn$ = new BehaviorSubject<boolean>(this.hasToken());

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from './auth.service';
+import { API_BASE_URL } from './api-config';
 
 export interface UserProfile {
   _id: string;
@@ -24,13 +25,13 @@ export class UserService {
   userChanges() { return this.user$.asObservable(); }
 
   fetchProfile() {
-    return this.http.get<UserProfile>('http://localhost:3000/auth/profile').subscribe(profile => {
+    return this.http.get<UserProfile>(API_BASE_URL + '/auth/profile').subscribe(profile => {
       this.user$.next(profile);
     });
   }
 
   updateProfile(formData: FormData) {
-    return this.http.patch<{ profile: UserProfile; access_token: string }>('http://localhost:3000/auth/profile', formData).subscribe(res => {
+    return this.http.patch<{ profile: UserProfile; access_token: string }>(API_BASE_URL + '/auth/profile', formData).subscribe(res => {
       if (isPlatformBrowser(this.platformId)) {
         localStorage.setItem('access_token', res.access_token);
       }
@@ -46,7 +47,7 @@ export class UserService {
   getUserById(id: string) {
     if (!this.userSubjects[id]) {
       this.userSubjects[id] = new BehaviorSubject<UserProfile | undefined>(undefined);
-      this.http.get<UserProfile>(`http://localhost:3000/auth/user/${id}`).subscribe(profile => {
+      this.http.get<UserProfile>(`${API_BASE_URL}/auth/user/${id}`).subscribe(profile => {
         this.userCache.set(id, profile);
         this.userSubjects[id].next(profile);
       });

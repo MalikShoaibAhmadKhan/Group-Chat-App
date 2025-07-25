@@ -15,8 +15,8 @@ services:
       - MONGO_URI=mongodb://mongo:27017/group-chat
       - PORT=3000
       - JWT_SECRET=your_jwt_secret
-    ports:
-      - '3000:3000'
+    expose:
+      - '3000'
     depends_on:
       - mongo
   frontend:
@@ -24,9 +24,19 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
     container_name: groupchat-frontend
+    expose:
+      - '80'
+    depends_on:
+      - backend
+  nginx:
+    image: nginx:1.26
+    container_name: nginx-proxy
     ports:
       - '80:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
+      - frontend
       - backend
 volumes:
   mongodata: 

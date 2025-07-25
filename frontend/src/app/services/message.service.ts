@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Subject } from 'rxjs';
+import { API_BASE_URL } from './api-config';
 
 @Injectable({ providedIn: 'root' })
 export class MessageService {
-  private apiUrl = 'http://localhost:3000/messages';
+  private apiUrl = API_BASE_URL + '/messages';
   private http = inject(HttpClient);
 
   getMessageCount() {
@@ -12,6 +12,6 @@ export class MessageService {
   }
 
   updateReactions(messageId: string, reactions: { [emoji: string]: string[] }) {
-    return this.http.patch(`http://localhost:3000/messages/${messageId}/reactions`, { reactions });
+    return this.http.patch(`${this.apiUrl}/${messageId}/reactions`, { reactions });
   }
 } 
