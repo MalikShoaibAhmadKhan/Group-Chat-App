@@ -1,10 +1,12 @@
 import { Component, inject, PLATFORM_ID } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SettingsService } from './services/settings.service';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { BehaviorSubject } from 'rxjs';
+import { Title } from '@angular/platform-browser';
+import { filter, map, mergeMap } from 'rxjs/operators';
 
 @Component({
   imports: [RouterModule, CommonModule],
@@ -22,6 +24,11 @@ export class App {
   username: string | null = null;
   userProfile: { _id: string; username: string; photo?: string } | null = null;
 
+  // Inject router, activatedRoute, and title
+  router = inject(Router);
+  activatedRoute = inject(ActivatedRoute);
+  titleService = inject(Title);
+
   get theme() { return this.settings.theme; }
   get textSize() { return this.settings.textSize; }
   get textStyle() { return this.settings.textStyle; }
@@ -34,6 +41,31 @@ export class App {
     this.applyTheme(this.theme);
     this.applyTextSize(this.textSize);
     this.applyTextStyle(this.textStyle);
+
+    // Dynamic page title logic
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      map(() => {
+        let route = this.activatedRoute.firstChild;
+        let child = route;
+        while (child) {
+          if (child.firstChild) {
+            child = child.firstChild;
+            route = child;
+          } else {
+            child = null;
+          }
+        }
+        return route;
+      }),
+      mergeMap(route => route?.data ?? [])
+    ).subscribe(data => {
+      if (data && data['title']) {
+        this.titleService.setTitle(data['title']);
+      } else {
+        this.titleService.setTitle('Group Chat App');
+      }
+    });
   }
 
   ngOnInit() {

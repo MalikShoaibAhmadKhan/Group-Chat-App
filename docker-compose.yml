@@ -25,7 +25,7 @@ services:
       dockerfile: frontend/Dockerfile
     container_name: groupchat-frontend
     ports:
-      - '4200:80'
+      - '80:80'
     depends_on:
       - backend
 volumes:

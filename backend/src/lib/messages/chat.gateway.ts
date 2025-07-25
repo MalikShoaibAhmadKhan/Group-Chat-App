@@ -10,11 +10,14 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UseGuards } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
+import { MessagesService } from './messages.service';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
   private userSockets = new Map<string, Set<string>>(); // userId -> set of socketIds
+
+  constructor(private readonly messagesService: MessagesService) {}
 
   afterInit(server: Server) {
     this.server = server;
@@ -68,10 +71,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('sendMessage')
-  handleSendMessage(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
+  async handleSendMessage(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
     // data: { roomId, content, ... }
     const userId = socket.data.userId;
-    this.server.to(data.roomId).emit('newMessage', { ...data, user: { ...((socket as any).user), senderId: userId }, senderId: userId });
+    // Save to DB
+    const savedMsg = await this.messagesService.sendMessage(
+      (socket as any).user.username,
+      data.content,
+      data.roomId,
+      userId
+    );
+    // Broadcast the saved message (with _id, timestamps, etc.)
+    this.server.to(data.roomId).emit('newMessage', savedMsg);
   }
 
   @SubscribeMessage('userTyping')

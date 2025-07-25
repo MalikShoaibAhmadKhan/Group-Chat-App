@@ -278,14 +278,13 @@ export class RoomChatComponent implements OnInit {
         }
       );
     } else {
-      // Emit via socket for real-time
+      // Only emit via socket for real-time, do not push to messages here
       const msg = {
         content: this.newMessage,
         roomId: this.room._id,
         sender: sender,
         delivered: false
       };
-      this.messages.push(msg as any); // Optimistic UI
       this.socketService.sendMessage(msg);
       this.newMessage = '';
     }
