@@ -11,6 +11,16 @@
 - The header shows the username and profile photo (if set) on the far right, separate from navigation buttons.
 - Navigation bar only shows "Dashboard" and "Rooms" when logged in; login/register links are hidden.
 - All routes except login/register are protected by authentication guard.
+- **Each page now sets a unique browser tab title** (e.g., "Login - Group Chat App", "Dashboard - Group Chat App", "Room Chat - Group Chat App").
+- **The frontend is now served on port 80 via Docker/nginx** (visit `http://localhost`), not 4200.
+
+---
+
+## 📝 Dynamic Page Titles
+- The browser tab title updates automatically based on the current route.
+- Titles are set in `frontend/src/app/app.routes.ts` using the `data: { title: ... }` property for each route.
+- The Angular app uses the `Title` service to update the tab title on navigation.
+- Example: When on `/dashboard`, the tab shows "Dashboard - Group Chat App".
 
 ---
 
@@ -150,6 +160,17 @@ graph TD
 ├── nx.json
 └── ... (Nx config and root files)
 ```
+
+---
+
+## 🛠️ Running the App (Docker Compose)
+- To run the full stack (frontend, backend, mongo) in production mode:
+  ```bash
+  docker compose up -d --build
+  ```
+- **Frontend (Angular/nginx):** http://localhost (served on port 80)
+- **Backend (NestJS):** http://localhost:3000
+- **MongoDB:** localhost:27017
 
 ---
 

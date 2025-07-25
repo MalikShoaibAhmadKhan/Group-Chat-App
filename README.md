@@ -2,7 +2,7 @@
 
 > **Tip:** To see the architecture and structure diagrams in VSCode, install the [Markdown Preview Mermaid Support](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) extension and use the Markdown preview (`Ctrl+Shift+V`).
 
-A full-stack, real-time group chat app built with Angular (frontend), NestJS (backend), and MongoDB. Features include authentication, chat rooms, messaging, file/image uploads, emoji reactions, pinning, unread badges, user list, typing indicator, and advanced, modern UI/UX.
+A full-stack, real-time group chat app built with Angular (frontend), NestJS (backend), and MongoDB. Features include authentication, chat rooms, messaging, file/image uploads, emoji reactions, pinning, unread badges, user list, typing indicator, advanced, modern UI/UX, **and dynamic page titles per route**.
 
 ---
 
@@ -13,6 +13,7 @@ A full-stack, real-time group chat app built with Angular (frontend), NestJS (ba
 - The header shows the username and profile photo (if set) on the far right, separate from navigation buttons.
 - Navigation bar only shows "Dashboard" and "Rooms" when logged in; login/register links are hidden.
 - All routes except login/register are protected by authentication guard.
+- **Each page now sets a unique browser tab title** (e.g., "Login - Group Chat App", "Dashboard - Group Chat App", "Room Chat - Group Chat App").
 
 ---
 
@@ -194,6 +195,14 @@ graph TD
 
 ---
 
+## 📝 Dynamic Page Titles
+- The browser tab title updates automatically based on the current route.
+- Titles are set in `frontend/src/app/app.routes.ts` using the `data: { title: ... }` property for each route.
+- The Angular app uses the `Title` service to update the tab title on navigation.
+- Example: When on `/dashboard`, the tab shows "Dashboard - Group Chat App".
+
+---
+
 ## 🛠️ Getting Started
 
 ### Prerequisites
@@ -212,16 +221,19 @@ docker run -d --name mongodb -p 27017:27017 -v mongodata:/data/db mongo:6.0
 docker start mongodb
 ```
 
-### Run the apps
-#### Start the backend (NestJS)
+### Run the apps (Docker Compose)
+#### Start all services (frontend, backend, mongo)
+```bash
+docker compose up -d --build
+```
+- **Frontend (Angular/nginx):** http://localhost (now served on port 80)
+- **Backend (NestJS):** http://localhost:3000
+- **MongoDB:** localhost:27017
+
+#### (For development, you can still use Nx serve if you want hot reload)
 ```bash
 npx nx serve backend
-# Runs on http://localhost:3000/
-```
-#### Start the frontend (Angular)
-```bash
 npx nx serve frontend
-# Runs on http://localhost:4200/
 ```
 
 ---
