@@ -1,7 +1,7 @@
 # ----- build -----
     FROM node:20-slim AS build
     WORKDIR /app
-    COPY package*.json nx.json tsconfig.base.json workspace.json ./
+    COPY package*.json nx.json tsconfig.base.json  ./
     COPY frontend ./frontend
     COPY shared-types ./shared-types
     RUN npm ci --legacy-peer-deps
