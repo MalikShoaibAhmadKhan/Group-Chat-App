@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Output, inject, PLATFORM_ID } from '@angular/core';
+import { Component, EventEmitter, Output, inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import { RoomService, Room } from '../../services/room.service';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '../../services/api-config';
 
 @Component({
   selector: 'app-room-list',
@@ -12,7 +13,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './room-list.html',
   styleUrls: ['./room-list.css'],
 })
-export class RoomListComponent {
+export class RoomListComponent implements OnInit {
   rooms: Room[] = [];
   newRoom = '';
   renamingRoom: Room | null = null;
@@ -43,7 +44,9 @@ export class RoomListComponent {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.currentUserId = payload.userId || payload.sub || '';
-      } catch {}
+      } catch {
+        // Ignore token parsing errors
+      }
     }
     this.roomService.getRooms().subscribe((data) => {
       this.rooms = data;
@@ -52,7 +55,7 @@ export class RoomListComponent {
   }
 
   fetchUnreadCount(room: Room) {
-    this.http.get<{ _id: string; createdAt: string; }[]>(`http://localhost:3000/messages/${room._id}/meta`).subscribe(
+    this.http.get<{ _id: string; createdAt: string; }[]>(`${API_BASE_URL}/messages/${room._id}/meta`).subscribe(
       (messages) => {
         let lastRead = null;
         if (isPlatformBrowser(this.platformId)) {

@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser } from '@angular/common';
+import { API_BASE_URL } from '../services/api-config';
 
 interface Message {
   _id?: string;
@@ -40,7 +41,9 @@ export class ChatComponent implements OnInit {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.currentUser = payload.username;
-      } catch {}
+      } catch {
+        // Ignore token parsing errors
+      }
     }
   }
 
@@ -63,7 +66,7 @@ export class ChatComponent implements OnInit {
     this.messages = [];
     this.cd.detectChanges();
     if (room && room._id) {
-      this.http.get<Message[]>(`http://localhost:3000/messages/${room._id}`).subscribe(
+      this.http.get<Message[]>(`${API_BASE_URL}/messages/${room._id}`).subscribe(
         msgs => {
           this.messages = msgs;
         },
@@ -76,7 +79,7 @@ export class ChatComponent implements OnInit {
 
   sendMessage() {
     if (!this.newMessage.trim() || !this.selectedRoom) return;
-    this.http.post<Message>('http://localhost:3000/messages', {
+    this.http.post<Message>(`${API_BASE_URL}/messages`, {
       content: this.newMessage,
       roomId: this.selectedRoom._id
     }).subscribe(

@@ -8,6 +8,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { UserService } from '../../services/user.service';
 import { MessageService } from '../../services/message.service';
 import { SocketService } from '../../services/socket.service';
+import { API_BASE_URL } from '../../services/api-config';
 
 interface Message {
   _id?: string;
@@ -240,7 +241,7 @@ export class RoomChatComponent implements OnInit {
 
   fetchMessages() {
     if (this.room && this.room._id) {
-      this.http.get<Message[]>(`http://localhost:3000/messages/${this.room._id}`).subscribe(
+      this.http.get<Message[]>(`${API_BASE_URL}/messages/${this.room._id}`).subscribe(
         msgs => {
           this.messages = msgs;
           this.cd.detectChanges();
@@ -283,7 +284,7 @@ export class RoomChatComponent implements OnInit {
       formData.append('content', this.newMessage);
       formData.append('roomId', this.room._id!);
       formData.append('file', this.selectedFile);
-      this.http.post<Message>('http://localhost:3000/messages/upload', formData).subscribe(
+      this.http.post<Message>(`${API_BASE_URL}/messages/upload`, formData).subscribe(
         msg => {
           this.messages.push(msg);
           this.newMessage = '';
@@ -439,7 +440,7 @@ export class RoomChatComponent implements OnInit {
 
   saveEdit(msg: Message) {
     if (!this.editValue.trim() || !msg._id) return;
-    this.http.patch<Message>(`http://localhost:3000/messages/${msg._id}`, { content: this.editValue }).subscribe(
+    this.http.patch<Message>(`${API_BASE_URL}/messages/${msg._id}`, { content: this.editValue }).subscribe(
       updated => {
         msg.content = updated.content;
         msg.edited = updated.edited;
@@ -460,7 +461,7 @@ export class RoomChatComponent implements OnInit {
   deleteMessage(msg: Message) {
     if (!msg._id) return;
     if (!confirm('Delete this message?')) return;
-    this.http.delete<{ deleted: boolean }>(`http://localhost:3000/messages/${msg._id}`).subscribe(
+    this.http.delete<{ deleted: boolean }>(`${API_BASE_URL}/messages/${msg._id}`).subscribe(
       res => {
         msg.content = '[deleted]';
         msg.deleted = true;

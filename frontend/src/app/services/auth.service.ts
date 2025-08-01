@@ -2,8 +2,7 @@ import { PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
-
-const API_BASE_URL = '/api'; // fallback or default value
+import { API_BASE_URL } from './api-config';
 
 import { Injectable } from '@angular/core';
 
@@ -82,6 +81,6 @@ export class AuthService {
   }
 
   getOnlineUserCount() {
-    return this.http.get<number>('http://localhost:3000/auth/online-count');
+    return this.http.get<number>(`${this.apiUrl}/online-count`);
   }
 }
