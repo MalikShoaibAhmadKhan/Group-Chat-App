@@ -128,7 +128,7 @@ export class RoomChatComponent implements OnInit, AfterViewInit, OnDestroy {
             setTimeout(() => {
               if (d.user && d.user.username) {
                 this.typingUsers.delete(d.user.username);
-                this.cd.detectChanges();
+              this.cd.detectChanges();
               }
             }, 2000);
             this.cd.detectChanges();
@@ -210,7 +210,7 @@ export class RoomChatComponent implements OnInit, AfterViewInit, OnDestroy {
               setTimeout(() => {
                 if (d.user && d.user.username) {
                   this.typingUsers.delete(d.user.username);
-                  this.cd.detectChanges();
+                this.cd.detectChanges();
                 }
               }, 2000);
               this.cd.detectChanges();
@@ -262,7 +262,7 @@ export class RoomChatComponent implements OnInit, AfterViewInit, OnDestroy {
         const reader = new FileReader();
         reader.onload = (e: ProgressEvent<FileReader>) => {
           if (e.target?.result && typeof e.target.result === 'string') {
-            this.filePreviewUrl = e.target.result;
+          this.filePreviewUrl = e.target.result;
           }
         };
         reader.readAsDataURL(this.selectedFile);
