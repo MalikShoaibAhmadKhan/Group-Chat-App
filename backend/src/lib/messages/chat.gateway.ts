@@ -12,7 +12,10 @@ import { UseGuards } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { MessagesService } from './messages.service';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ 
+  cors: true,
+  transports: ['websocket', 'polling']
+})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
   private userSockets = new Map<string, Set<string>>(); // userId -> set of socketIds
@@ -21,31 +24,40 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   afterInit(server: Server) {
     this.server = server;
+    console.log('WebSocket Gateway initialized');
   }
 
   async handleConnection(socket: Socket) {
+    console.log('Client connected:', socket.id);
     // JWT validation (replace 'your_jwt_secret' with your actual secret)
     const token = socket.handshake.query.token as string;
-    try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-      (socket as any).user = payload;
-      const userId = String(payload.sub);
-      socket.data.userId = userId;
-      if (!this.userSockets.has(userId)) {
-        this.userSockets.set(userId, new Set());
+    if (token) {
+      try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+        (socket as any).user = payload;
+        const userId = String(payload.sub);
+        socket.data.userId = userId;
+        if (!this.userSockets.has(userId)) {
+          this.userSockets.set(userId, new Set());
+        }
+        this.userSockets.get(userId)!.add(socket.id);
+        if (this.userSockets.get(userId)!.size === 1) {
+          // First connection for this user
+          this.server.emit('userOnline', { userId });
+        }
+        console.log('Authenticated user connected:', userId);
+      } catch {
+        // Invalid token, but don't disconnect immediately
+        console.log('Invalid token provided');
       }
-      this.userSockets.get(userId)!.add(socket.id);
-      if (this.userSockets.get(userId)!.size === 1) {
-        // First connection for this user
-        this.server.emit('userOnline', { userId });
-      }
-    } catch {
-      socket.disconnect(true);
-      return;
+    } else {
+      // No token provided, allow connection but mark as unauthenticated
+      console.log('No token provided');
     }
   }
 
   handleDisconnect(socket: Socket) {
+    console.log('Client disconnected:', socket.id);
     const userId = socket.data.userId;
     if (userId && this.userSockets.has(userId)) {
       this.userSockets.get(userId)!.delete(socket.id);
@@ -74,6 +86,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleSendMessage(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
     // data: { roomId, content, ... }
     const userId = socket.data.userId;
+    if (!userId) {
+      socket.emit('error', { message: 'Authentication required' });
+      return;
+    }
     // Save to DB
     const savedMsg = await this.messagesService.sendMessage(
       (socket as any).user.username,
