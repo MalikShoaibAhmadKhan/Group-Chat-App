@@ -9,9 +9,10 @@ if (win && typeof (win as { ENV?: { apiUrl?: string } }).ENV?.apiUrl === 'string
 } else if (win && typeof (win as { location?: { hostname: string } }).location?.hostname === 'string') {
   // Auto-detect API URL based on current domain
   const hostname = (win as { location: { hostname: string } }).location.hostname;
+  const protocol = (win as { location: { protocol: string } }).location?.protocol || 'http:';
   if (hostname.startsWith('app.')) {
     // If we're on app subdomain, API should be on api subdomain
-    apiUrl = `http://${hostname.replace('app.', 'api.')}`;
+    apiUrl = `${protocol}//${hostname.replace('app.', 'api.')}`;
   } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
     // Local development
     apiUrl = 'http://localhost:3000';
