@@ -14,8 +14,8 @@ if (win && typeof (win as { ENV?: { apiUrl?: string } }).ENV?.apiUrl === 'string
     // If we're on app subdomain, API should be on api subdomain
     apiUrl = `${protocol}//${hostname.replace('app.', 'api.')}`;
   } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Local development
-    apiUrl = 'http://localhost:3000';
+    // Local development - use nginx proxy
+    apiUrl = 'http://localhost';
   }
 }
 
