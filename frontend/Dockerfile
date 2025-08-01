@@ -1,23 +1,17 @@
-# Dockerfile for frontend (Angular) - Direct Fix
-
-# ---- Build Stage ----
-FROM node:20-slim as build
-
-WORKDIR /app
-
-COPY nx.json package.json package-lock.json tsconfig.base.json ./
-COPY frontend ./frontend
-COPY shared-types ./shared-types
-
-RUN npm install --legacy-peer-deps
-RUN npx nx build frontend --prod
-
-# ---- Production Stage ----
-FROM nginx:1.26
-WORKDIR /usr/share/nginx/html
-
-COPY --from=build /app/dist/frontend/browser .
-COPY ./frontend/nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# ----- build -----
+    FROM node:20-slim AS build
+    WORKDIR /app
+    COPY package*.json nx.json tsconfig.base.json workspace.json ./
+    COPY frontend ./frontend
+    COPY shared-types ./shared-types
+    RUN npm ci --legacy-peer-deps
+    RUN npx nx run frontend:build:production   # modern Nx syntax
+    
+    # ----- runtime -----
+    FROM nginx:1.26
+    COPY --from=build /app/dist/apps/frontend/browser /usr/share/nginx/html
+    # Optional: custom SPA rules
+    COPY ./frontend/nginx.conf /etc/nginx/conf.d/default.conf
+    EXPOSE 80
+    CMD ["nginx","-g","daemon off;"]
+    
