@@ -69,7 +69,7 @@ export class RoomListComponent implements OnInit {
         }
         this.unreadCounts[room._id] = unread;
       },
-      err => {
+      () => {
         this.unreadCounts[room._id] = 0;
       }
     );

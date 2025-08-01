@@ -70,7 +70,7 @@ export class ChatComponent implements OnInit {
         msgs => {
           this.messages = msgs;
         },
-        err => {
+        () => {
           this.messages = [];
         }
       );
@@ -87,7 +87,7 @@ export class ChatComponent implements OnInit {
         this.messages.push(msg);
         this.newMessage = '';
       },
-      err => {
+      () => {
         alert('Failed to send message');
       }
     );

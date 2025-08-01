@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject, PLATFORM_ID, ViewEncapsulation, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, PLATFORM_ID, ViewEncapsulation, Input, AfterViewInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -34,7 +34,7 @@ interface Message {
   styleUrls: ['./room-chat.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class RoomChatComponent implements OnInit {
+export class RoomChatComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() room: Room | null = null;
   messages: Message[] = [];
   newMessage = '';
@@ -44,7 +44,7 @@ export class RoomChatComponent implements OnInit {
   typingUsers: Set<string> = new Set();
   pinnedMessageIds: Set<string> = new Set();
   reactionEmojis = ['👍', '😂', '❤️', '😮', '😢', '🔥'];
-  typingTimeout: any = null;
+  typingTimeout: number | null = null;
   selectedFile: File | null = null;
   filePreviewUrl: string | null = null;
   isImageFile = false;
@@ -161,15 +161,15 @@ export class RoomChatComponent implements OnInit {
     if (token) {
       this.socketService.connect(token);
       // Reconnection handling
-      (this.socketService as any).socket?.on('disconnect', () => {
+      (this.socketService as unknown as { socket?: { on: (event: string, callback: () => void) => void } }).socket?.on('disconnect', () => {
         this.reconnecting = true;
         this.cd.detectChanges();
       });
-      (this.socketService as any).socket?.on('connect', () => {
+      (this.socketService as unknown as { socket?: { on: (event: string, callback: () => void) => void } }).socket?.on('connect', () => {
         this.reconnecting = false;
         this.cd.detectChanges();
       });
-      (this.socketService as any).socket?.on('reconnect_attempt', () => {
+      (this.socketService as unknown as { socket?: { on: (event: string, callback: () => void) => void } }).socket?.on('reconnect_attempt', () => {
         this.reconnecting = true;
         this.cd.detectChanges();
       });
@@ -246,7 +246,7 @@ export class RoomChatComponent implements OnInit {
           this.messages = msgs;
           this.cd.detectChanges();
         },
-        err => {
+        () => {
           this.messages = [];
         }
       );
@@ -260,8 +260,10 @@ export class RoomChatComponent implements OnInit {
       this.isImageFile = this.selectedFile.type.startsWith('image/');
       if (this.isImageFile) {
         const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.filePreviewUrl = e.target.result;
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+          if (e.target?.result && typeof e.target.result === 'string') {
+            this.filePreviewUrl = e.target.result;
+          }
         };
         reader.readAsDataURL(this.selectedFile);
       } else {
@@ -282,7 +284,9 @@ export class RoomChatComponent implements OnInit {
     if (this.selectedFile) {
       const formData = new FormData();
       formData.append('content', this.newMessage);
-      formData.append('roomId', this.room._id!);
+      if (this.room._id) {
+        formData.append('roomId', this.room._id);
+      }
       formData.append('file', this.selectedFile);
       this.http.post<Message>(`${API_BASE_URL}/messages/upload`, formData).subscribe(
         msg => {
@@ -290,7 +294,7 @@ export class RoomChatComponent implements OnInit {
           this.newMessage = '';
           this.clearFile();
         },
-        err => {
+        () => {
           alert('Failed to send message with file');
         }
       );
@@ -327,7 +331,7 @@ export class RoomChatComponent implements OnInit {
 
   getAvatarUrl(username: string, senderId?: string): string {
     if ((senderId && senderId === this.userService.user?._id) || (username === this.userService.user?.username && this.userService.user?.photo)) {
-      return this.userService.user.photo!;
+      return this.userService.user.photo || '';
     }
     if (senderId) {
       this.userService.getUserById(senderId).subscribe(profile => {
@@ -336,7 +340,7 @@ export class RoomChatComponent implements OnInit {
         }
       });
       if (this.userProfiles[senderId]?.photo) {
-        return this.userProfiles[senderId].photo!;
+        return this.userProfiles[senderId].photo || '';
       }
     }
     return `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
@@ -407,8 +411,8 @@ export class RoomChatComponent implements OnInit {
     }
     // Persist reactions to backend
     if (message._id) {
-      this.messageService.updateReactions(message._id, message.reactions).subscribe((updated: any) => {
-        message.reactions = updated.reactions;
+      this.messageService.updateReactions(message._id, message.reactions).subscribe((updated) => {
+        message.reactions = (updated as { reactions: { [emoji: string]: string[] } }).reactions;
       });
     }
     this.hideReactions();
@@ -447,7 +451,7 @@ export class RoomChatComponent implements OnInit {
         this.editingMessageId = null;
         this.editValue = '';
       },
-      err => {
+      () => {
         alert('Failed to edit message');
       }
     );
@@ -462,11 +466,11 @@ export class RoomChatComponent implements OnInit {
     if (!msg._id) return;
     if (!confirm('Delete this message?')) return;
     this.http.delete<{ deleted: boolean }>(`${API_BASE_URL}/messages/${msg._id}`).subscribe(
-      res => {
+      () => {
         msg.content = '[deleted]';
         msg.deleted = true;
       },
-      err => {
+      () => {
         alert('Failed to delete message');
       }
     );
@@ -522,7 +526,7 @@ export class RoomChatComponent implements OnInit {
       const msg = this.messages[i];
       if (!seen.has(msg.sender)) {
         seen.add(msg.sender);
-        const lastActive = new Date((msg as any).createdAt || Date.now()).getTime();
+        const lastActive = new Date((msg as Message & { createdAt?: string }).createdAt || Date.now()).getTime();
         users.push({
           username: msg.sender,
           online: now - lastActive < 2 * 60 * 1000, // 2 minutes
