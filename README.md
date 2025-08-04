@@ -21,6 +21,7 @@
 - [⚙️ Installation & Setup](#️-installation--setup)
 - [🔧 Development Guide](#-development-guide)
 - [📊 API Documentation](#-api-documentation)
+- [🧪 Postman Testing Commands](#-postman-testing-commands)
 - [🎨 UI/UX Features](#-uiux-features)
 - [🔒 Security Features](#-security-features)
 - [🧪 Testing Strategy](#-testing-strategy)
@@ -588,6 +589,212 @@ cd backend && node src/seed.ts
 - **alice** / password
 - **bob** / password  
 - **charlie** / password
+
+---
+
+## 🧪 Postman Testing Commands
+
+### Authentication Endpoints
+
+#### 1. Register User
+```bash
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123"
+}
+```
+
+#### 2. Login User
+```bash
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "password": "password"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### Room Management
+
+#### 3. Get All Rooms
+```bash
+GET {{baseUrl}}/rooms/
+Authorization: Bearer {{token}}
+```
+
+#### 4. Create Room
+```bash
+POST {{baseUrl}}/rooms/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Test Room",
+  "isPrivate": false
+}
+```
+
+### Messaging
+
+#### 5. Send Message
+```bash
+POST {{baseUrl}}/messages/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Hello from Postman!",
+  "roomId": "{{roomId}}"
+}
+```
+
+#### 6. Get Messages for Room
+```bash
+GET {{baseUrl}}/messages/{{roomId}}
+Authorization: Bearer {{token}}
+```
+
+### User Management
+
+#### 7. Get User Profile
+```bash
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{token}}
+```
+
+#### 8. Get Room Count
+```bash
+GET {{baseUrl}}/rooms/count
+Authorization: Bearer {{token}}
+```
+
+#### 9. Get Message Count
+```bash
+GET {{baseUrl}}/messages/count
+Authorization: Bearer {{token}}
+```
+
+### Testing Workflow
+
+#### Step-by-Step Testing
+```bash
+# 1. Register a new user
+curl -X POST http://localhost/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "postmantest", "password": "password123"}'
+
+# 2. Login and get token
+TOKEN=$(curl -s -X POST http://localhost/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "postmantest", "password": "password123"}' \
+  | jq -r '.access_token')
+
+# 3. Create a room
+ROOM_ID=$(curl -s -X POST http://localhost/rooms/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Postman Test Room", "isPrivate": false}' \
+  | jq -r '._id')
+
+# 4. Send a message
+curl -X POST http://localhost/messages/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"content\": \"Hello from curl!\", \"roomId\": \"$ROOM_ID\"}"
+
+# 5. Get messages
+curl -X GET http://localhost/messages/$ROOM_ID \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Environment Variables Setup
+
+#### Postman Environment
+```json
+{
+  "baseUrl": "http://localhost",
+  "token": "",
+  "roomId": "",
+  "userId": ""
+}
+```
+
+#### cURL Variables
+```bash
+# Set these variables in your shell
+export BASE_URL="http://localhost"
+export TOKEN="your_jwt_token_here"
+export ROOM_ID="room_id_here"
+```
+
+### Testing with Seeded Data
+
+#### Quick Test with Seeded Users
+```bash
+# Test login with seeded users
+curl -X POST http://localhost/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "alice", "password": "password"}'
+
+curl -X POST http://localhost/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "bob", "password": "password"}'
+
+curl -X POST http://localhost/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "charlie", "password": "password"}'
+```
+
+### Error Handling Examples
+
+#### 401 Unauthorized
+```bash
+# Try to access protected endpoint without token
+curl -X GET http://localhost/rooms/
+# Response: {"statusCode": 401, "message": "Unauthorized"}
+```
+
+#### 400 Bad Request
+```bash
+# Try to register with existing username
+curl -X POST http://localhost/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "alice", "password": "password"}'
+# Response: {"message": "User already exists", "error": "Unauthorized", "statusCode": 401}
+```
+
+### WebSocket Testing
+
+#### Connect to WebSocket
+```javascript
+// In browser console or WebSocket client
+const socket = io('http://localhost/socket.io/');
+
+// Join a room
+socket.emit('join-room', { roomId: 'room_id_here' });
+
+// Send a message
+socket.emit('send-message', {
+  content: 'Hello from WebSocket!',
+  roomId: 'room_id_here'
+});
+
+// Listen for new messages
+socket.on('new-message', (message) => {
+  console.log('New message:', message);
+});
+```
 
 ---
 
