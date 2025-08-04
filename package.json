@@ -2,7 +2,9 @@
   "name": "@./source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "seed": "cd backend && node src/seed.ts"
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/build-angular": "~20.0.0",

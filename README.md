@@ -484,6 +484,9 @@ npx nx test frontend   # Test frontend
 npx nx lint backend    # Lint backend
 npx nx lint frontend   # Lint frontend
 
+# Seed database (if needed)
+npm run seed           # Populate database with test data
+
 # Commit with conventional commits
 git commit -m "feat: add new chat feature"
 
@@ -574,12 +577,17 @@ db.messages.find({ roomId: "room_id" }).sort({ createdAt: -1 })
 
 #### Database Seeding
 ```bash
-# Run seed script
+# Run seed script (recommended)
 npm run seed
 
 # Or manually
-node backend/src/seed.js
+cd backend && node src/seed.ts
 ```
+
+**Seeded Users:**
+- **alice** / password
+- **bob** / password  
+- **charlie** / password
 
 ---
 
