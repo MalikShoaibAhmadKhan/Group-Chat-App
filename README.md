@@ -108,28 +108,25 @@ graph TB
 ## 🚀 Features
 
 ### 🔐 Authentication & User Management
-- [x] **User Registration** with email validation
-- [x] **JWT-based Authentication** with refresh tokens
-- [x] **Password Hashing** using bcrypt
-- [x] **Profile Management** with avatar uploads
-- [x] **Session Management** with automatic logout
+- [x] **User Registration** 
+- [x] **JWT-based Authentication** 
+- [x] **Password Hashing** 
+- [x] **Profile Management** 
+- [x] **Session Management** with logout
 - [x] **Route Guards** for protected pages
 
 ### 💬 Real-Time Messaging
 - [x] **WebSocket Integration** for instant messaging
 - [x] **Message Broadcasting** to all room members
 - [x] **Typing Indicators** showing active users
-- [x] **Message History** with pagination
 - [x] **Message Editing** and deletion
-- [x] **Read Receipts** and unread counts
+
 
 ### 🎨 Advanced UI/UX
 - [x] **Dark/Light Theme** toggle with persistence
-- [x] **Responsive Design** for mobile/tablet/desktop
-- [x] **Animated Components** with CSS transitions
+- [x] **Responsive Design** 
 - [x] **Custom Scrollbars** and loading states
-- [x] **Toast Notifications** for user feedback
-- [x] **Context Menus** for message actions
+
 
 ### 📁 File Management
 - [x] **Drag & Drop** file uploads
@@ -143,8 +140,7 @@ graph TB
 - [x] **Message Pinning** in rooms
 - [x] **User Online Status** indicators
 - [x] **Room Management** (create, edit, delete)
-- [x] **User Search** and filtering
-- [x] **Message Search** functionality
+
 
 ---
 
@@ -308,7 +304,7 @@ Group-Chat-App/
 - **Standalone Components**: Modern Angular architecture
 - **Signal-based Change Detection**: Improved performance
 - **Control Flow**: New template syntax for better DX
-- **Server-Side Rendering**: Angular Universal for SEO
+
 
 #### **Bootstrap 5**
 - **Responsive Grid System**: Mobile-first approach
@@ -329,7 +325,6 @@ Group-Chat-App/
 - **Dependency Injection**: Modular design
 - **Guards & Interceptors**: Request/response processing
 - **WebSocket Gateway**: Real-time communication
-- **OpenAPI Integration**: Auto-generated API docs
 
 #### **MongoDB 6.0**
 - **Document-based Storage**: Flexible schema
@@ -401,8 +396,8 @@ cp backend/.env.example backend/.env
 # Edit backend/.env with your configuration
 
 # Start development servers
-npm run dev:backend  # Backend on http://localhost:3000
-npm run dev:frontend # Frontend on http://localhost:4200
+npx nx serve backend # Backend on http://localhost:3000
+npx nx serve frontend # Frontend on http://localhost:4200
 ```
 
 ### Environment Configuration
@@ -484,8 +479,10 @@ module.exports = {
 git checkout -b feature/new-feature
 
 # Make changes and test
-npm run test
-npm run lint
+npx nx test backend    # Test backend
+npx nx test frontend   # Test frontend
+npx nx lint backend    # Lint backend
+npx nx lint frontend   # Lint frontend
 
 # Commit with conventional commits
 git commit -m "feat: add new chat feature"
@@ -497,25 +494,65 @@ git push origin feature/new-feature
 #### 2. Testing Strategy
 ```bash
 # Unit tests
-npm run test
+npx nx test backend    # Backend unit tests
+npx nx test frontend   # Frontend unit tests
+npx nx test shared-types  # Shared types tests
+npx nx test env-config    # Environment config tests
 
 # E2E tests
-npm run e2e
+npx nx e2e frontend-e2e   # Frontend E2E tests
+npx nx e2e backend-e2e    # Backend E2E tests
 
 # Coverage report
-npm run test:coverage
+npx nx test backend --coverage  # Backend coverage
+npx nx test frontend --coverage # Frontend coverage
 ```
 
 #### 3. Code Quality
 ```bash
 # Linting
-npm run lint
+npx nx lint backend    # Lint backend code
+npx nx lint frontend   # Lint frontend code
+npx nx lint shared-types  # Lint shared types
+npx nx lint env-config    # Lint environment config
 
-# Formatting
-npm run format
+# Formatting (using Prettier)
+npx prettier --write "**/*.{ts,js,json,html,css,scss}"
 
 # Type checking
-npm run type-check
+npx nx run-many --target=type-check --projects=backend,frontend,shared-types,env-config
+```
+
+#### 4. Current Test Status
+```bash
+# Backend Tests: Some tests pass, some need dependency setup
+npx nx test backend    # 6 passed, 3 failed (dependency issues)
+
+# Frontend Tests: Some tests pass, some need HTTP client setup
+npx nx test frontend   # 2 passed, 4 failed (HTTP client provider issues)
+
+# Linting: Warnings present but no critical errors
+npx nx lint backend    # 27 warnings, 0 errors
+npx nx lint frontend   # 14 problems (6 errors, 8 warnings)
+```
+
+#### 5. Additional Useful Commands
+```bash
+# Build applications
+npx nx build backend   # Build backend for production
+npx nx build frontend  # Build frontend for production
+
+# Run specific projects
+npx nx serve backend   # Start backend development server
+npx nx serve frontend  # Start frontend development server
+
+# Check project dependencies
+npx nx graph          # Visualize project dependencies
+npx nx show projects  # List all projects in workspace
+
+# Run multiple targets
+npx nx run-many --target=test --projects=backend,frontend
+npx nx run-many --target=lint --projects=backend,frontend
 ```
 
 ### Database Management
@@ -828,6 +865,7 @@ describe('AuthService', () => {
           provide: getModelToken(User.name),
           useValue: mockUserModel,
         },
+        JwtService, // Add JWT service provider
       ],
     }).compile();
 
@@ -841,6 +879,10 @@ describe('AuthService', () => {
   });
 });
 ```
+
+**Note:** Some tests may fail due to missing dependencies. To fix:
+- Backend tests: Add missing providers (JwtService, UserModel, etc.)
+- Frontend tests: Add HttpClient provider to test modules
 
 ### Integration Testing
 ```typescript
